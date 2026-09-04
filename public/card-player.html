@@ -230,7 +230,14 @@
   }
   .lid-front {
     overflow: hidden;
-    background: none;
+    background: linear-gradient(115deg, #b9c2cf 0%, #eef2f7 18%, #8f9aa9 34%, #dde4ec 50%, #98a3b3 66%, #f2f5f9 82%, #aab4c2 100%);
+  }
+  .lid-sheen {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.5) 50%, transparent 60%);
+    background-size: 250% 100%;
+    animation: foilSweep 3.2s ease-in-out infinite;
   }
   .lid-back {
     transform: rotateX(180deg);
@@ -298,9 +305,6 @@
   .pack-spin.tearing .lid-front,
   .pack-spin.opening .lid-front,
   .pack-spin.opened .lid-front,
-  .pack-spin.tearing .lid-print,
-  .pack-spin.opening .lid-print,
-  .pack-spin.opened .lid-print,
   .pack-spin.tearing .lid-back,
   .pack-spin.opening .lid-back,
   .pack-spin.opened .lid-back {
@@ -454,11 +458,23 @@
   .pd-art {
     position: absolute;
     top: 36%; left: 12%; right: 12%; bottom: 15%;
-    background-size: cover;
-    background-position: center 20%;
+    z-index: 3;
+    pointer-events: none;
+    background:
+      radial-gradient(70% 55% at 50% 36%, rgba(255,255,255,.2), transparent 58%),
+      linear-gradient(155deg, #4a5a70 0%, #1a2432 42%, #2c3a4e 68%, #121820 100%);
     -webkit-mask-image: linear-gradient(to top, transparent 0%, #000 16%, #000 100%);
     mask-image: linear-gradient(to top, transparent 0%, #000 16%, #000 100%);
-    z-index: 3;
+  }
+  .pd-art::before {
+    content: 'V';
+    position: absolute;
+    left: 50%; top: 46%;
+    transform: translate(-50%, -50%) rotate(-8deg);
+    font-weight: 900;
+    font-size: clamp(64px, 22vw, 96px);
+    letter-spacing: -.06em;
+    color: rgba(255,255,255,.12);
   }
   .pd-badge {
     position: absolute;
@@ -518,7 +534,7 @@
   .pack-inner { border-radius: 14px; box-shadow: 0 18px 44px rgba(0,0,0,.5); }
   .pack-back { box-shadow: 0 14px 40px rgba(0,0,0,.55); }
 
-  /* Cards stay behind the foil. They only appear as they leave the top. */
+  /* Cards stay behind the foil. Hidden until the top is off. */
   .pack-well {
     position: absolute;
     left: 10%; right: 10%;
@@ -527,15 +543,18 @@
     overflow: hidden;
     z-index: 1;
     pointer-events: none;
+    visibility: hidden;
     border-radius: 0 0 10px 10px;
   }
   .pack-spin.opening .pack-well {
+    visibility: visible;
     overflow: visible;
     z-index: 3;
     /* Only the open mouth and above — cards leave the torn-off top */
     clip-path: inset(-240% -40% 78% -40%);
   }
   .pack-spin.opened .pack-well {
+    visibility: visible;
     overflow: visible;
     z-index: 3;
     clip-path: none;
@@ -1090,20 +1109,10 @@
       <div class="trace-head" id="traceHead" aria-hidden="true"></div>
       <div class="tear-flash" id="tearFlash" aria-hidden="true"></div>
       <div class="pack-lid" id="packTop">
-        <div class="lid-front">
-          <div class="pack-body lid-print">
-            <div class="pd-crimp-top"></div>
-            <div class="pd-facets"></div>
-            <div class="pd-frame"></div>
-            <div class="pd-frame-inner"></div>
-            <div class="pd-brand">VIXI</div>
-            <div class="pd-logo">PRIZE PACKS</div>
-            <div class="pd-art" id="lidArt"></div>
-            <div class="pd-badge"><b>3</b>CARDS</div>
-            <div class="pd-tag">Game Day Exclusive</div>
-            <div class="pd-crimp-bot"></div>
-            <div class="pd-sheen"></div>
-          </div>
+        <div class="lid-front foil-mat">
+          <div class="pd-crimp-top"></div>
+          <div class="pd-facets"></div>
+          <div class="lid-sheen"></div>
           <div class="lid-rip" aria-hidden="true"></div>
         </div>
         <div class="lid-back"></div>
@@ -1332,11 +1341,7 @@
   const packArt = document.getElementById('packArt');
 
   function randomizePackArt() {
-    const p = D.PLAYERS[Math.floor(Math.random() * D.PLAYERS.length)];
-    const url = "url('" + p.img + "')";
-    packArt.style.backgroundImage = url;
-    const lidArt = document.getElementById('lidArt');
-    if (lidArt) lidArt.style.backgroundImage = url;
+    if (packArt) packArt.style.backgroundImage = '';
   }
   randomizePackArt();
 

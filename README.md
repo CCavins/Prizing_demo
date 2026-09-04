@@ -1,27 +1,24 @@
-# VIXI Prize Packs — Demo Studio
+# VIXI Prize Packs
 
-A fully browser-based mockup of the VIXI Prize Packs product: configure a prize campaign,
-simulate up to ten phones tearing packs in one window, and watch a venue video board react live.
-No app, no server — everything runs client-side (localStorage + BroadcastChannel keep all
-windows in sync on the same machine).
+Web-only trading-card drop: rip a foil pack on a phone, flip the stack, and run a venue board from the same files. No React remake.
 
-**Live demo:** https://ccavins.github.io/Prizing_cards_demo/
+**Live demo:** https://ccavins.github.io/Prizing_demo/
 
-## Views
+Repo: [CCavins/Prizing_demo](https://github.com/CCavins/Prizing_demo)
 
-| Route | What it is |
+## Pages
+
+| File | What it is |
 | --- | --- |
-| `#/` | Landing page with the four ready-made scenes |
-| `#/admin` | Campaign configurator — locations w/ QR codes, prize logic, inventory, board layout |
-| `#/sim` | Phone wall — up to 10 simulated phones, auto/manual play, live stats, reset |
-| `#/play` | The phone experience (what a QR scan opens) |
-| `#/board` | Venue video board — live tears, winner moments, leaders |
+| `card-player.html` | Phone player — sealed pack, left-to-right seal swipe, pack lowers, card comes out of the mouth, face-down stack, 3D inspect, save vs try another |
+| `pack-looks.js` / `pack-looks.css` | Five open recipes: **Trace** (Pocket-style light stage), Crimp, Case, Vault, Salon |
+| `card-output2.html` | Venue board (current) — live tears, prizes, QR, countdown |
+| `card-output.html` | Venue board (original layout) |
+| `card-admin.html` | Admin mock — inventory, drop length, pack cap, redemption |
+| `cards-deck.js` | Player / insert / prize cards and foil rarities |
+| `cards-sync.js` | Firebase RTDB, or same-device BroadcastChannel + localStorage |
 
-## Game modes
-
-- **Instant Win** — one scan, one pack, one card: prize or "try again" (odds + inventory).
-- **Collector** — locations drop different cards; collect N of the set to unlock the prize.
-- **Cards are prizes** — every card is a tiered prize with per-card inventory.
+Deep-link a look with `?look=trace` (or `crimp`, `case`, `vault`, `salon`). The chip on the player also opens a recipe sheet.
 
 ## Develop
 
@@ -30,8 +27,18 @@ npm install
 npm run dev
 ```
 
-## Assets
+Open the hub, then **Rip a pack**. Add `?local=1` on the player and a board if you want them to sync on one machine without Firebase.
 
-Theme art (packs, card faces, card backs, board backgrounds) was generated with
-Higgsfield Nano Banana. `scripts/gen-assets.sh` regenerates missing assets;
-`scripts/cut-packs.mjs` die-cuts the pack images for the tear animation.
+```bash
+# phone player, local sync, Trace look
+http://127.0.0.1:5173/card-player.html?local=1&look=trace
+```
+
+## Deploy
+
+Pushes to `main` build with Vite (`base` `/Prizing_demo/`) and publish to GitHub Pages via [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
+
+```bash
+npm run build
+npm run preview
+```

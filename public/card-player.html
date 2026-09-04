@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Vixi Prize Packs — Rip Your Pack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="pack-looks.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    overscroll-behavior: none;
+  }
+  body {
+    font-family: 'Lato', system-ui, -apple-system, sans-serif;
+    background: radial-gradient(120% 90% at 50% 0%, #223047 0%, #16202f 55%, #0d141f 100%);
+    color: #fff;
+    height: 100dvh;
+    overflow: hidden;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(60deg, rgba(255,255,255,.02) 25%, transparent 25.5%),
+      linear-gradient(-60deg, rgba(255,255,255,.02) 25%, transparent 25.5%),
+      linear-gradient(60deg, transparent 74.5%, rgba(0,0,0,.14) 75%),
+      linear-gradient(-60deg, transparent 74.5%, rgba(0,0,0,.14) 75%);
+    background-size: 90px 156px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Header ──────────────────────────────────────── */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(env(safe-area-inset-top, 0px) + 14px) 18px 10px;
+    z-index: 50;
+  }
+  .brand {
+    font-weight: 900;
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.85);
+  }
+  .brand span { color: #ffb347; }
+  .coll-chip {
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,.75);
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 99px;
+    padding: 6px 14px;
+    cursor: pointer;
+    display: none;
+  }
+  .coll-chip.visible { display: block; }
+
+  /* ── Views ───────────────────────────────────────── */
+  .view {
+    position: fixed; inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 70px 20px calc(env(safe-area-inset-bottom, 0px) + 24px);
+    z-index: 5;
+  }
+  .view.active { display: flex; }
+
+  /* ── Pack view ───────────────────────────────────── */
+  .pack-kicker {
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #ffb347;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .pack-title {
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 22px;
+    line-height: 1.25;
+  }
+
+  .pack-scene {
+    perspective: 1000px;
+    margin-bottom: 22px;
+    overflow: visible;
+  }
+  .pack-spin {
+    position: relative;
+    width: min(64vw, 260px);
+    aspect-ratio: 5 / 7.6;
+    transform-style: preserve-3d;
+    overflow: visible;
+  }
+  .pack-spin.spinning {
+    animation: packSpin 1.5s cubic-bezier(.35,.7,.3,1) both,
+               packIdle 5s 1.9s ease-in-out infinite alternate;
+  }
+  .pack-spin.idle { animation: packIdle 5s ease-in-out infinite alternate; }
+  .pack-spin.tearing { animation: none; }
+  @keyframes packSpin {
+    0%   { transform: rotateY(0deg) scale(.6); opacity: 0; }
+    25%  { opacity: 1; }
+    100% { transform: rotateY(360deg) scale(1); opacity: 1; }
+  }
+  @keyframes packIdle {
+    0%   { transform: rotateY(-10deg) rotateX(3deg) translateY(0); }
+    100% { transform: rotateY(10deg) rotateX(-3deg) translateY(-8px); }
+  }
+  .pack-inner {
+    position: absolute; inset: 0;
+    transform-style: preserve-3d;
+    z-index: 2;
+    background: #c5cdd8;
+  }
+  .pack-face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .pack-front {
+    transform: translateZ(9px);
+    transform-style: preserve-3d;
+    border-radius: 14px;
+    z-index: 1;
+  }
+  .pack-back  { transform: rotateY(180deg) translateZ(9px); }
+
+  /* Foil wrapper — one continuous skin, no pre-cut mouth */
+  .foil-mat {
+    background:
+      linear-gradient(115deg, #b9c2cf 0%, #eef2f7 18%, #8f9aa9 34%, #dde4ec 50%, #98a3b3 66%, #f2f5f9 82%, #aab4c2 100%);
+  }
+
+  /* Back of the pack — silver foil with crimps */
+  .pack-back {
+    background: linear-gradient(115deg, #b9c2cf 0%, #eef2f7 18%, #8f9aa9 34%, #dde4ec 50%, #98a3b3 66%, #f2f5f9 82%, #aab4c2 100%);
+    border-radius: 14px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.55);
+    overflow: hidden;
+  }
+  .pack-back .pb-crimp-top, .pack-back .pb-crimp-bot {
+    position: absolute; left: 0; right: 0; height: 8%;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 2px, transparent 2px 9px),
+      linear-gradient(115deg, #9aa5b4, #e8edf4 30%, #8f9aa9 55%, #dde4ec 80%, #a6b0bf);
+  }
+  .pack-back .pb-crimp-top { top: 0; border-radius: 14px 14px 0 0; }
+  .pack-back .pb-crimp-bot { bottom: 0; border-radius: 0 0 14px 14px; }
+  .pack-back::after {
+    content: 'VIXI';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-7deg);
+    font-weight: 900;
+    font-size: 26px;
+    letter-spacing: 8px;
+    color: rgba(20,30,45,.18);
+  }
+
+  /* Interior visible only after the flap hinges open */
+  .pack-mouth {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 15%;
+    border-radius: 14px 14px 0 0;
+    z-index: 1;
+    background:
+      radial-gradient(70% 80% at 50% 100%, rgba(255,255,255,.06), transparent 55%),
+      linear-gradient(180deg, #070b10 0%, #141b26 100%);
+  }
+
+  /* Top flap — same foil as the body, sits flush until the swipe */
+  .pack-lid {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 15.2%;
+    z-index: 5;
+    transform-origin: 50% 100%;
+    transform-style: preserve-3d;
+    border-radius: 14px 14px 0 0;
+    opacity: 0;
+  }
+  .pack-spin.opening .pack-lid,
+  .pack-spin.opened .pack-lid { opacity: 1; }
+  .pack-spin.tearing .pack-lid { will-change: transform; }
+  .lid-front, .lid-back {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 14px 14px 0 0;
+  }
+  .lid-front {
+    overflow: hidden;
+    background: linear-gradient(115deg, #b9c2cf 0%, #eef2f7 18%, #8f9aa9 34%, #dde4ec 50%, #98a3b3 66%, #f2f5f9 82%, #aab4c2 100%);
+    background-size: 100% 660%;
+    background-position: top;
+  }
+  .lid-crimp {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 32%;
+    border-radius: 14px 14px 0 0;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.14) 0 2px, transparent 2px 9px),
+      linear-gradient(180deg, rgba(255,255,255,.22), transparent 80%);
+  }
+  .lid-brand {
+    position: absolute;
+    left: 0; right: 0; top: 42%;
+    text-align: center;
+    font-weight: 900;
+    font-size: clamp(11px, 3.2vw, 14px);
+    letter-spacing: .5em;
+    text-indent: .5em;
+    color: rgba(20,30,45,.75);
+  }
+  .lid-sheen {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.5) 50%, transparent 60%);
+    background-size: 250% 100%;
+    animation: foilSweep 3.2s ease-in-out infinite;
+  }
+  .lid-back {
+    transform: rotateX(180deg);
+    background:
+      linear-gradient(180deg, #2c3546 0%, #121820 70%, #0c1016 100%);
+    box-shadow: inset 0 0 22px rgba(0,0,0,.45);
+  }
+  .lid-back::after {
+    content: '';
+    position: absolute;
+    left: 10%; right: 10%;
+    top: 18%;
+    height: 2px;
+    border-radius: 99px;
+    background: rgba(255,255,255,.08);
+  }
+  @keyframes foilSweep {
+    0%, 100% { background-position: 120% 0; }
+    50% { background-position: -20% 0; }
+  }
+
+  /* Heat-seal highlight — a slightly irregular path, not a ruler line */
+  .pack-seam {
+    position: absolute;
+    top: 11%;
+    left: 3%; right: 3%;
+    height: 30px;
+    z-index: 8;
+    pointer-events: none;
+  }
+  .seam-svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .seam-idle-path {
+    stroke: rgba(255,255,255,.32);
+    stroke-width: 1.15;
+    animation: seamPulse 2.6s ease-in-out infinite;
+  }
+  @keyframes seamPulse {
+    0%, 100% { opacity: .14; }
+    50% { opacity: .38; }
+  }
+  .seam-fill-path {
+    stroke: url(#seamGold);
+    stroke-width: 2.15;
+    filter: drop-shadow(0 0 3px rgba(255,220,160,.75));
+  }
+  .pack-spin.tearing .seam-idle-path { opacity: .12; animation: none; }
+  .pack-spin.opened .pack-seam,
+  .pack-spin.opening .pack-seam { opacity: 0; transition: opacity .2s; }
+  .pack-spin.tearing .lid-front {
+    box-shadow: 0 14px 22px rgba(0,0,0,.32);
+  }
+  .pack-spin.opening .pack-lid,
+  .pack-spin.opened .pack-lid {
+    clip-path: var(--tear-lid);
+  }
+
+  /* Unifies lid + body into one sealed wrapper while closed */
+  .pack-wrap-sheen {
+    position: absolute; inset: 0;
+    border-radius: 14px;
+    z-index: 7;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(0,0,0,.26) 0%, transparent 9%, transparent 91%, rgba(0,0,0,.26) 100%),
+      linear-gradient(180deg, rgba(255,255,255,.08) 0%, transparent 14%);
+    transition: opacity .22s;
+  }
+  .pack-spin.opened .pack-wrap-sheen,
+  .pack-spin.opening .pack-wrap-sheen { opacity: 0; }
+
+  /* Printed body — the whole sealed pack. The face is never cut or revealed through. */
+  .pack-body {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    z-index: 2;
+    overflow: hidden;
+    background: linear-gradient(115deg, #b9c2cf 0%, #eef2f7 18%, #8f9aa9 34%, #dde4ec 50%, #98a3b3 66%, #f2f5f9 82%, #aab4c2 100%);
+  }
+  .pack-body::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 8px;
+    z-index: 8;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(0,0,0,.38), transparent);
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .pack-spin.opening .pack-body::before,
+  .pack-spin.opened .pack-body::before { opacity: 1; }
+  /* facet print pattern */
+  .pack-body .pd-facets {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(60deg, rgba(255,255,255,.30) 25%, transparent 25.5%),
+      linear-gradient(-60deg, rgba(255,255,255,.30) 25%, transparent 25.5%),
+      linear-gradient(60deg, transparent 74.5%, rgba(20,30,45,.10) 75%),
+      linear-gradient(-60deg, transparent 74.5%, rgba(20,30,45,.10) 75%);
+    background-size: 36% 30%;
+  }
+  /* dark metallic frame with cut corners (two nested layers) */
+  .pd-frame {
+    position: absolute;
+    top: 28%; left: 7%; right: 7%; bottom: 12%;
+    background: linear-gradient(160deg, #33415a, #0e1626 40%, #3c4c68 60%, #101a2a);
+    clip-path: polygon(10% 0, 90% 0, 100% 5%, 100% 100%, 0 100%, 0 5%);
+  }
+  .pd-frame-inner {
+    position: absolute;
+    top: calc(28% + 2px); left: calc(7% + 2px); right: calc(7% + 2px); bottom: calc(12% + 2px);
+    background: linear-gradient(115deg, #9aa5b4 0%, #ccd4de 30%, #8f9aa9 55%, #c4ccd8 80%, #a6b0bf 100%);
+    clip-path: polygon(10% 0, 90% 0, 100% 5%, 100% 100%, 0 100%, 0 5%);
+  }
+  .pd-crimp-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 8%;
+    border-radius: 14px 14px 0 0;
+    z-index: 5;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.14) 0 2px, transparent 2px 9px),
+      linear-gradient(180deg, rgba(255,255,255,.2), transparent 80%);
+  }
+  .pd-brand {
+    position: absolute;
+    top: 10.5%; left: 0; right: 0;
+    text-align: center;
+    font-weight: 900;
+    font-size: clamp(10px, 3vw, 13px);
+    letter-spacing: .5em;
+    text-indent: .5em;
+    color: rgba(20,30,45,.75);
+    z-index: 4;
+  }
+  .pd-logo {
+    position: absolute;
+    top: 18%; left: 0; right: 0;
+    text-align: center;
+    font-weight: 900;
+    font-style: italic;
+    font-size: clamp(20px, 7vw, 30px);
+    letter-spacing: .05em;
+    line-height: 1;
+    background: linear-gradient(170deg, #33415a 8%, #0e1626 38%, #3c4c68 52%, #0a1120 78%, #2c3a52);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 1px 1px rgba(255,255,255,.6));
+    z-index: 4;
+  }
+  .pd-art {
+    position: absolute;
+    top: 36%; left: 12%; right: 12%; bottom: 15%;
+    background-size: cover;
+    background-position: center 20%;
+    -webkit-mask-image: linear-gradient(to top, transparent 0%, #000 16%, #000 100%);
+    mask-image: linear-gradient(to top, transparent 0%, #000 16%, #000 100%);
+    z-index: 3;
+  }
+  .pd-badge {
+    position: absolute;
+    left: 9%; bottom: 14%;
+    z-index: 5;
+    background: linear-gradient(160deg, #2c3a52, #0e1626);
+    color: #e8eef6;
+    font-weight: 900;
+    font-size: clamp(9px, 2.8vw, 12px);
+    line-height: 1.15;
+    text-align: center;
+    padding: 6px 9px;
+    border-radius: 8px;
+    transform: rotate(-4deg);
+    box-shadow: 0 3px 10px rgba(0,0,0,.45);
+  }
+  .pd-badge b { font-size: clamp(14px, 4.6vw, 20px); display: block; }
+  .pd-tag {
+    position: absolute;
+    bottom: 6.5%; left: 0; right: 0;
+    text-align: center;
+    font-weight: 700;
+    font-size: clamp(7px, 2.2vw, 9px);
+    letter-spacing: .3em;
+    text-indent: .3em;
+    text-transform: uppercase;
+    color: rgba(20,30,45,.6);
+    z-index: 4;
+  }
+  /* bottom crimp seal */
+  .pd-crimp-bot {
+    position: absolute;
+    bottom: 0; left: 0; right: 0; height: 5.5%;
+    border-radius: 0 0 14px 14px;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 2px, transparent 2px 9px),
+      linear-gradient(115deg, #9aa5b4, #e8edf4 30%, #8f9aa9 55%, #dde4ec 80%, #a6b0bf);
+    z-index: 5;
+  }
+  /* glossy wrapper sheen + puffy shading */
+  .pd-sheen {
+    position: absolute; inset: 0;
+    z-index: 6;
+    pointer-events: none;
+    background:
+      radial-gradient(130% 55% at 50% 34%, rgba(255,255,255,.18), transparent 62%),
+      linear-gradient(90deg, rgba(0,0,0,.30) 0%, transparent 9%, transparent 91%, rgba(0,0,0,.30) 100%),
+      linear-gradient(0deg, rgba(0,0,0,.22) 0%, transparent 10%);
+  }
+  .pd-sheen::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 42%, rgba(255,255,255,.45) 50%, transparent 58%);
+    background-size: 250% 100%;
+    animation: foilSweep 3.6s ease-in-out infinite;
+  }
+  .pack-inner { border-radius: 14px; box-shadow: 0 18px 44px rgba(0,0,0,.5); }
+  .pack-back { box-shadow: 0 14px 40px rgba(0,0,0,.55); }
+
+  /* Cards stay behind the foil. They only appear as they leave the top. */
+  .pack-well {
+    position: absolute;
+    left: 10%; right: 10%;
+    top: 16%;
+    bottom: 7%;
+    overflow: hidden;
+    z-index: 1;
+    pointer-events: none;
+    border-radius: 0 0 10px 10px;
+  }
+  .pack-spin.opening .pack-well {
+    overflow: visible;
+    z-index: 3;
+    /* Only the mouth and above — never paint a card over the printed face */
+    clip-path: inset(-220% -40% 72% -40%);
+  }
+  .pack-spin.opened .pack-well {
+    overflow: visible;
+    z-index: 3;
+    clip-path: none;
+  }
+  .pack-cards {
+    position: absolute;
+    inset: 0;
+  }
+  .pack-cards .tcard {
+    position: absolute;
+    left: 50%; top: 50%;
+    --cardw: calc(min(64vw, 260px) * .7744);
+    width: 96%;
+    transform: translate(-50%, 42%);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .pack-cards .tcard.rise {
+    transition: transform .9s cubic-bezier(.22,.78,.22,1);
+    transform: translate(-50%, -58%);
+  }
+
+  /* Top comes off first; then the pack lowers as the card is drawn out */
+  .pack-spin.opening .pack-inner {
+    transition: transform .9s .34s cubic-bezier(.22,.7,.2,1);
+    transform: translateY(30%) scale(.97);
+  }
+  .pack-spin.opened .pack-inner {
+    transition: transform .65s cubic-bezier(.3,.2,.2,1), opacity .5s ease;
+    transform: translateY(48%) scale(.92);
+    opacity: 0;
+  }
+  .pack-spin.opening .pack-front,
+  .pack-spin.opened .pack-front {
+    transform: translateZ(9px);
+    z-index: 1;
+  }
+
+  .pack-lid.flyoff {
+    transition: transform .5s cubic-bezier(.16,.78,.2,1), opacity .32s .22s ease;
+    transform: translateY(-92%) rotate(-8deg) !important;
+    pointer-events: none;
+  }
+  .pack-spin.opening .pack-lid.flyoff,
+  .pack-spin.opened .pack-lid.flyoff {
+    opacity: 0;
+  }
+
+  .swipe-cue {
+    margin-top: 4px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.7);
+    text-align: center;
+  }
+  .swipe-cue .finger {
+    display: inline-block;
+    font-size: 20px;
+    animation: fingerSlide 1.6s ease-in-out infinite;
+    margin-right: 6px;
+  }
+  @keyframes fingerSlide {
+    0%, 100% { transform: translateX(14px); opacity: .5; }
+    50% { transform: translateX(-14px); opacity: 1; }
+  }
+  .packs-left {
+    margin-top: 12px;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.4);
+    text-align: center;
+    line-height: 1.7;
+  }
+  .packs-left b { color: #ffb347; }
+
+  /* ── Big swipe tip overlay ───────────────────────── */
+  .tip-overlay {
+    position: fixed; inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity .4s;
+  }
+  .tip-overlay.active { display: flex; }
+  .tip-overlay.hiding { opacity: 0; }
+  .tip-track {
+    /* pinned to the pack's tear line via JS (top set in showTip) */
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(80vw, 320px);
+    height: 70px;
+    display: flex;
+    align-items: center;
+  }
+  .tip-track .tip-dash {
+    width: 100%;
+    height: 2px;
+    border: 0;
+    border-radius: 99px;
+    background: linear-gradient(90deg, transparent, rgba(255,228,180,.85), transparent);
+    box-shadow: 0 0 12px rgba(255,210,150,.45);
+  }
+  .tip-finger {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    font-size: 58px;
+    transform: translateY(-40%);
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,.6));
+    animation: tipSwipe 1.5s ease-in-out infinite;
+  }
+  @keyframes tipSwipe {
+    0%   { left: 0; opacity: 0; }
+    15%  { opacity: 1; }
+    80%  { left: calc(100% - 58px); opacity: 1; }
+    100% { left: calc(100% - 58px); opacity: 0; }
+  }
+  .tip-text {
+    text-shadow: 0 2px 10px rgba(0,0,0,.85);
+    margin-top: 18px;
+    font-weight: 900;
+    font-size: 18px;
+    letter-spacing: 1px;
+    text-align: center;
+    line-height: 1.5;
+    text-transform: uppercase;
+  }
+  .tip-sub {
+    margin-top: 6px;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,.5);
+    text-transform: uppercase;
+  }
+
+  .locked-msg {
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+    color: rgba(255,255,255,.7);
+    line-height: 1.7;
+    max-width: 280px;
+  }
+  .locked-msg .big { font-size: 44px; margin-bottom: 12px; }
+
+  /* ── Reveal view ─────────────────────────────────── */
+  .stack-zone {
+    position: relative;
+    width: 100%;
+    height: min(54vh, 440px);
+    overflow: visible;
+    touch-action: none;
+  }
+  .stack-card {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: min(62vw, 250px);
+    aspect-ratio: 5 / 7;
+    transform-style: preserve-3d;
+    will-change: transform;
+    touch-action: none;
+    cursor: grab;
+  }
+  .sc-flip {
+    position: absolute; inset: 0;
+    transform-style: preserve-3d;
+    transition: transform .55s cubic-bezier(.3,.7,.3,1);
+  }
+  .sc-flip.facedown { transform: rotateY(180deg); }
+  .sc-face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  /* real length (not %) so calc()-based type sizing works */
+  .sc-face .tcard { --cardw: min(62vw, 250px); width: 100%; height: 100%; }
+  .sc-back { transform: rotateY(180deg); }
+
+  .stack-caption {
+    text-align: center;
+    margin-top: 6px;
+    min-height: 58px;
+  }
+  .stack-caption .cap-main {
+    font-weight: 900;
+    font-size: 17px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    animation: capPop .4s cubic-bezier(.17,.67,.29,1.4) both;
+  }
+  .stack-caption .cap-main.gold { color: #ffd700; }
+  .stack-caption .cap-main.dim { color: rgba(255,255,255,.75); }
+  .stack-caption .cap-sub {
+    margin-top: 4px;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.45);
+  }
+  @keyframes capPop {
+    0% { transform: scale(.75); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .swipe-next-cue {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.55);
+    margin-top: 10px;
+    animation: hintBlink 1.6s ease-in-out infinite;
+    visibility: hidden;
+  }
+  .swipe-next-cue.visible { visibility: visible; }
+  .swipe-next-cue .finger {
+    display: inline-block;
+    font-size: 17px;
+    margin-right: 6px;
+    animation: fingerSlideL 1.6s ease-in-out infinite;
+  }
+  @keyframes fingerSlideL {
+    0%, 100% { transform: translateX(14px); opacity: .5; }
+    50% { transform: translateX(-14px); opacity: 1; }
+  }
+
+  .btn-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(320px, 86vw);
+    margin-top: 12px;
+    min-height: 128px;
+  }
+  .btn {
+    border: none;
+    border-radius: 12px;
+    font-family: inherit;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 15px 0;
+    cursor: pointer;
+    text-align: center;
+  }
+  .btn-primary { background: linear-gradient(90deg, #ffb347, #ff6b4a); color: #1a1208; }
+  .btn-ghost {
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.18);
+    color: #fff;
+  }
+  .btn-reveal {
+    opacity: 0;
+    transform: translateY(16px) scale(.92);
+    pointer-events: none;
+    transition: opacity .35s, transform .35s cubic-bezier(.2,.8,.3,1.2);
+  }
+  .btn-reveal.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+  .keep-note {
+    text-align: center;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.35);
+    margin-top: 2px;
+    opacity: 0;
+    transition: opacity .4s;
+  }
+  .keep-note.show { opacity: 1; }
+
+  /* ── Collection view ─────────────────────────────── */
+  #viewCollection { justify-content: flex-start; overflow: hidden; }
+  .coll-title {
+    font-weight: 900;
+    font-size: 20px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 6px 0 2px;
+  }
+  .coll-sub {
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.4);
+    margin-bottom: 16px;
+  }
+  .coll-scroll {
+    flex: 1;
+    width: 100%;
+    max-width: 420px;
+    overflow-y: auto;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 20px;
+  }
+  .coll-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 4px;
+  }
+  .coll-grid .tcard {
+    /* grid cell width: (scroll area − padding − 2 gaps) / 3 */
+    --cardw: calc((min(100vw - 40px, 420px) - 32px) / 3);
+    width: 100%;
+    cursor: pointer;
+  }
+  .coll-slot-empty {
+    aspect-ratio: 5 / 7;
+    border: 1.5px dashed rgba(255,255,255,.18);
+    border-radius: 10px;
+  }
+  .coll-empty-msg {
+    margin-top: 40px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 13px;
+    color: rgba(255,255,255,.5);
+    line-height: 1.6;
+  }
+  .coll-footer {
+    width: min(340px, 88vw);
+    padding-top: 12px;
+    text-align: center;
+  }
+  .coll-footer .rescan-note {
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,.45);
+    line-height: 1.6;
+    margin-top: 10px;
+  }
+  .auth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 13px 0;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  .auth-google { background: #fff; color: #1f1f1f; }
+  .auth-apple { background: #000; color: #fff; border: 1px solid rgba(255,255,255,.25); }
+  .g-logo { width: 20px; height: 20px; }
+  .signed-in {
+    font-weight: 700;
+    font-size: 13px;
+    color: #8be28b;
+  }
+
+  /* slam clone + impact */
+  .slam-clone {
+    position: fixed;
+    z-index: 500;
+    transform-origin: 0 0;
+    transition: transform .5s cubic-bezier(.3,.7,.25,1.12), opacity .2s;
+    pointer-events: none;
+  }
+  @keyframes slamHit {
+    0% { transform: scale(1.25); filter: brightness(1.8); }
+    40% { transform: scale(.95); }
+    100% { transform: scale(1); filter: brightness(1); }
+  }
+  .slam-hit { animation: slamHit .38s cubic-bezier(.2,.8,.3,1) both; }
+  @keyframes gridShake {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(2px, -2px); }
+    50% { transform: translate(-2px, 2px); }
+    75% { transform: translate(1px, 1px); }
+  }
+  .grid-shake { animation: gridShake .25s linear; }
+
+  /* ── Card viewer (3D) ────────────────────────────── */
+  .viewer {
+    position: fixed; inset: 0;
+    z-index: 600;
+    background: rgba(5,8,13,.94);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+  }
+  .viewer.active { display: flex; }
+  .viewer-scene { perspective: 1100px; }
+  .viewer-card-holder {
+    position: relative;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .viewer-card-holder .tcard {
+    --cardw: min(74vw, 330px);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .viewer-card-holder .viewer-back {
+    position: absolute;
+    inset: 0;
+    transform: rotateY(180deg);
+  }
+  .viewer-hint {
+    margin-top: 26px;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.45);
+  }
+  .viewer-close {
+    position: absolute;
+    top: calc(env(safe-area-inset-top, 0px) + 16px);
+    right: 18px;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.08);
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(10,14,22,.95);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 12px;
+    padding: 12px 22px;
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s, transform .3s;
+    z-index: 800;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">VIXI <span>PRIZE PACKS</span></div>
+  <div class="top-actions">
+    <button type="button" class="looks-chip" id="looksChip">Look · <b>Crimp</b></button>
+    <div class="coll-chip" id="collChip">Collection · 0</div>
+  </div>
+</div>
+
+<!-- ── Pack view ─────────────────────────────────────── -->
+<div class="view active" id="viewPack">
+  <div class="pack-kicker" id="packKicker">Exclusive Digital Collectable</div>
+  <div class="pack-title" id="packTitle">Rip Open<br>Tonight's Pack</div>
+
+  <div class="pack-scene">
+    <div class="pack-spin spinning" id="packSpin" role="button" aria-label="Open pack">
+      <div class="pack-inner" id="packInner">
+        <div class="pack-face pack-back">
+          <div class="pb-crimp-top"></div>
+          <div class="pb-crimp-bot"></div>
+        </div>
+        <div class="pack-face pack-front">
+          <div class="pack-mouth" aria-hidden="true"></div>
+          <div class="pouch-lip" aria-hidden="true"></div>
+          <div class="pack-body">
+            <div class="rip-edge" aria-hidden="true"></div>
+            <div class="pd-crimp-top"></div>
+            <div class="pd-facets"></div>
+            <div class="pd-frame"></div>
+            <div class="pd-frame-inner"></div>
+            <div class="pd-brand">VIXI</div>
+            <div class="pd-logo">PRIZE PACKS</div>
+            <div class="pd-art" id="packArt"></div>
+            <div class="pd-badge"><b>3</b>CARDS</div>
+            <div class="pd-tag">Game Day Exclusive</div>
+            <div class="pd-crimp-bot"></div>
+            <div class="pd-sheen"></div>
+          </div>
+          <div class="pack-lid" id="packTop">
+            <div class="lid-front foil-mat">
+              <div class="lid-crimp"></div>
+              <div class="lid-brand">VIXI</div>
+              <div class="lid-sheen"></div>
+              <div class="lid-rip" aria-hidden="true"></div>
+            </div>
+            <div class="lid-back"></div>
+          </div>
+          <div class="pack-seam" id="packSeam">
+            <svg class="seam-svg" viewBox="0 0 100 16" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="seamGold" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#ffe29a"/>
+                  <stop offset="0.45" stop-color="#fff"/>
+                  <stop offset="1" stop-color="#ffd789"/>
+                </linearGradient>
+                <linearGradient id="seamPocket" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#7ef0ff"/>
+                  <stop offset="0.38" stop-color="#ff6ad5"/>
+                  <stop offset="0.7" stop-color="#fff"/>
+                  <stop offset="1" stop-color="#ff9ae0"/>
+                </linearGradient>
+                <linearGradient id="seamHot" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#fff"/>
+                  <stop offset="0.5" stop-color="#fff"/>
+                  <stop offset="1" stop-color="#ffe6fb"/>
+                </linearGradient>
+              </defs>
+              <path id="seamGlow" class="seam-glow-path" fill="none" stroke-linecap="round"/>
+              <path id="seamIdle" class="seam-idle-path" fill="none" stroke-linecap="round"/>
+              <path id="seamFill" class="seam-fill-path" fill="none" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="trace-head" id="traceHead" aria-hidden="true"></div>
+          <div class="tear-flash" id="tearFlash" aria-hidden="true"></div>
+          <div class="pack-wrap-sheen"></div>
+        </div>
+      </div>
+      <div class="pack-well" id="packWell">
+        <div class="pack-cards" id="packCards"></div>
+      </div>
+    </div>
+  </div>
+  <div class="packs-left" id="packsLeft"></div>
+</div>
+
+<!-- ── Big swipe tip overlay ─────────────────────────── -->
+<div class="tip-overlay" id="tipOverlay">
+  <div class="tip-track">
+    <div class="tip-dash"></div>
+    <div class="tip-finger">👉</div>
+  </div>
+  <div class="tip-text" id="tipText">Swipe right across the seal<br>to open your pack</div>
+</div>
+
+<!-- ── Locked view ───────────────────────────────────── -->
+<div class="view" id="viewLocked">
+  <div class="locked-msg" id="lockedMsg"></div>
+  <div class="btn-row" style="min-height:0;margin-top:24px">
+    <button class="btn btn-ghost" id="btnLockedCollection">My Collection</button>
+  </div>
+</div>
+
+<!-- ── Reveal view ───────────────────────────────────── -->
+<div class="view" id="viewReveal">
+  <div class="stack-zone" id="stackZone"></div>
+  <div class="stack-caption" id="stackCaption"></div>
+  <div class="swipe-next-cue" id="swipeNextCue"><span class="finger">👈</span>Swipe left for the next card</div>
+  <div class="btn-row">
+    <button class="btn btn-primary btn-reveal" id="btnSave">Save to Collection</button>
+    <button class="btn btn-ghost btn-reveal" id="btnTryAgain">Or Try Another Pack</button>
+    <div class="keep-note" id="keepNote">You keep the cards from ONE pack only</div>
+  </div>
+</div>
+
+<!-- ── Collection view ───────────────────────────────── -->
+<div class="view" id="viewCollection">
+  <div class="coll-title">Your Collection</div>
+  <div class="coll-sub" id="collSub">Tap a card to view it</div>
+  <div class="coll-scroll" id="collScroll">
+    <div class="coll-grid" id="collGrid"></div>
+    <div class="coll-empty-msg" id="collEmptyMsg" style="display:none">No cards yet.<br>Rip a pack to start collecting!</div>
+  </div>
+  <div class="coll-footer" id="collFooter"></div>
+</div>
+
+<!-- ── 3D card viewer ────────────────────────────────── -->
+<div class="viewer" id="viewer">
+  <button class="viewer-close" id="viewerClose">✕</button>
+  <div class="viewer-scene">
+    <div class="viewer-card-holder" id="viewerHolder"></div>
+  </div>
+  <div class="viewer-hint">Drag to rotate</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+
+<div class="looks-sheet" id="looksSheet">
+  <div class="looks-backdrop" id="looksBackdrop"></div>
+  <div class="looks-panel" role="dialog" aria-label="Pack looks">
+    <div class="looks-handle"></div>
+    <h2>Pack looks</h2>
+    <p class="looks-lead">Five ways to draw a card out of a sealed pack. Trace is the phone-sized Pocket-style open: glow-trace, snap, top strip off, card out of the pouch. Every look swipes the seal left to right. Pick one, then rip.</p>
+    <div id="looksList"></div>
+  </div>
+</div>
+
+<script src="cards-sync.js"></script>
+<script src="cards-deck.js"></script>
+<script src="pack-looks.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script>
+(function () {
+  const S = CardsSync;
+  const D = CardsDeck;
+  const L = PackLooks;
+  const UID = S.getUid();
+  L.boot();
+
+  // ── Local persistence ────────────────────────────────
+  const LS = {
+    collection: 'vixi-cards-collection',
+    session: 'vixi-cards-session',
+    authed: 'vixi-cards-authed',
+  };
+  function lsGet(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw === null ? fallback : JSON.parse(raw);
+    } catch (e) { return fallback; }
+  }
+  function lsSet(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+  }
+
+  let collection = lsGet(LS.collection, []);
+  let authed = lsGet(LS.authed, false);
+
+  /* Session = one QR scan. Reload after saving = new scan. */
+  let session = null;
+  function packCap() { return Math.max(1, Number(S.config.packCap) || 3); }
+  function newSession() {
+    session = {
+      opened: 0,
+      prizeIndex: 1 + Math.floor(Math.random() * packCap()),
+      savedAt: 0,
+    };
+    lsSet(LS.session, session);
+  }
+  function saveSession() { lsSet(LS.session, session); }
+
+  // ── View switching ───────────────────────────────────
+  const views = {
+    pack: document.getElementById('viewPack'),
+    locked: document.getElementById('viewLocked'),
+    reveal: document.getElementById('viewReveal'),
+    collection: document.getElementById('viewCollection'),
+  };
+  function show(name) {
+    Object.keys(views).forEach(k => views[k].classList.toggle('active', k === name));
+  }
+
+  const toast = document.getElementById('toast');
+  let toastTimer = null;
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+  }
+
+  const collChip = document.getElementById('collChip');
+  function updateChip() {
+    collChip.textContent = 'Collection · ' + collection.length;
+    collChip.classList.toggle('visible', collection.length > 0);
+  }
+  collChip.addEventListener('click', () => { renderCollection(); renderCollFooter(); show('collection'); });
+  updateChip();
+
+  const packsLeftEl = document.getElementById('packsLeft');
+  function updatePacksLeft() {
+    if (!session) return;
+    const n = Math.min(session.opened + 1, packCap());
+    packsLeftEl.innerHTML =
+      'Pack <b>' + n + '</b> of <b>' + packCap() + '</b> &nbsp;·&nbsp; you keep ONE pack';
+  }
+
+  function showLocked() {
+    const el = document.getElementById('lockedMsg');
+    el.innerHTML = '<div class="big">📦</div>Your pack is saved!<br>Scan the QR code on the big screen to rip another pack.';
+    show('locked');
+  }
+  document.getElementById('btnLockedCollection').addEventListener('click', () => {
+    renderCollection(); renderCollFooter(); show('collection');
+  });
+
+  // ── Swipe tip overlay ────────────────────────────────
+  const tipOverlay = document.getElementById('tipOverlay');
+  let tipTimer = null;
+  function showTip() {
+    if (tearDone || tearActive) return; // ripping or ripped — don't show a late hint
+    // line the swipe demo up with the sealed heat-seal (26% down the pack)
+    const track = tipOverlay.querySelector('.tip-track');
+    const scene = document.querySelector('.pack-scene');
+    if (track && scene) {
+      const r = scene.getBoundingClientRect();
+      track.style.top = Math.max(0, r.top + r.height * 0.14 - 35) + 'px';
+    }
+    tipOverlay.classList.add('active');
+    tipOverlay.classList.remove('hiding');
+    clearTimeout(tipTimer);
+    tipTimer = setTimeout(hideTip, 2600);
+  }
+  function hideTipNow() {
+    clearTimeout(tipTimer);
+    tipOverlay.classList.remove('active', 'hiding');
+  }
+  function hideTip() {
+    if (!tipOverlay.classList.contains('active')) return;
+    clearTimeout(tipTimer);
+    tipOverlay.classList.add('hiding');
+    setTimeout(() => tipOverlay.classList.remove('active', 'hiding'), 420);
+  }
+
+  /* The phone is decoupled from the board's game state for the demo:
+     no drop-countdown locks, no reset epochs, no grand-reveal takeover.
+     Prizes are picked locally; claims are pushed best-effort so the
+     board's inventory still reflects real play when it's listening. */
+
+  // ── Pack contents (no inserts — 3 player cards, or 2 + prize) ─
+  async function buildPackContents(packNum) {
+    const cards = [D.randomPlayerCard(), D.randomPlayerCard()];
+    let third = null;
+
+    if (packNum === session.prizeIndex) {
+      const pool = S.BASE_PRIZES;
+      const totalW = pool.reduce((s, p) => s + p.weight, 0);
+      let r = Math.random() * totalW;
+      let pick = pool[0];
+      for (const p of pool) { r -= p.weight; if (r <= 0) { pick = p; break; } }
+      const code = S.makeCode();
+      third = D.prizeCard(pick, code);
+      // fire-and-forget: deplete board inventory when stock remains,
+      // but never block or change the phone experience
+      try { Promise.resolve(S.claim(pick.id, code, UID)).catch(() => {}); } catch (e) {}
+    }
+    if (!third) third = D.randomPlayerCard();
+    cards.push(third);
+    return cards;
+  }
+
+  // ── Tear gesture ─────────────────────────────────────
+  const packSpin = document.getElementById('packSpin');
+  const packInner = document.getElementById('packInner');
+  const packTop = document.getElementById('packTop');
+  const seamFill = document.getElementById('seamFill');
+  const packCardsEl = document.getElementById('packCards');
+  const packArt = document.getElementById('packArt');
+
+  function randomizePackArt() {
+    const p = D.PLAYERS[Math.floor(Math.random() * D.PLAYERS.length)];
+    packArt.style.backgroundImage = "url('" + p.img + "')";
+  }
+  randomizePackArt();
+
+  let tearActive = false;
+  let tearStartX = 0;
+  let tearStartY = 0;
+  let tearProgress = 0;
+  let tearDone = false;
+  let tearDir = 'right';
+  let holdTimer = null;
+
+  const seamGlow = document.getElementById('seamGlow');
+  const tearFlash = document.getElementById('tearFlash');
+  const packTitleEl = document.getElementById('packTitle');
+
+  function setTearVisual(p) {
+    L.tearVisual(L.current(), p, packTop, packInner, { seamFill, seamGlow, dir: tearDir });
+  }
+
+  function canOpenPack() {
+    if (session && session.savedAt) { showLocked(); return false; }
+    return true;
+  }
+
+  function onTearStart(e) {
+    if (tearDone || !views.pack.classList.contains('active') || !session) return;
+    if (!canOpenPack()) return;
+    hideTip();
+    if (L.current().id === 'trace' && packTitleEl) packTitleEl.classList.add('fading');
+    tearActive = true;
+    tearStartX = e.clientX;
+    tearStartY = e.clientY;
+    packSpin.classList.add('tearing');
+    tearDir = 'left';
+    clearTimeout(holdTimer);
+    const look = L.current();
+    holdTimer = setTimeout(() => {
+      if (tearActive && tearProgress < 0.25) completeTear();
+    }, look.id === 'salon' ? 1600 : 1400);
+    e.preventDefault();
+  }
+  function onTearMove(e) {
+    if (!tearActive || tearDone) return;
+    const box = packSpin.getBoundingClientRect();
+    const look = L.current();
+    const next = L.tearDelta(look, tearStartX, tearStartY, e, box.width, box.height);
+    tearProgress = next;
+    setTearVisual(tearProgress);
+    if (tearProgress >= 1) completeTear();
+    e.preventDefault();
+  }
+  function onTearEnd() {
+    clearTimeout(holdTimer);
+    clearInterval(holdTimer);
+    if (!tearActive || tearDone) return;
+    tearActive = false;
+    if (tearProgress < 1) {
+      tearProgress = 0;
+      packTop.style.transition = 'transform .35s ease';
+      if (seamFill) seamFill.style.transition = 'transform .35s ease';
+      setTearVisual(0);
+      setTimeout(() => {
+        packTop.style.transition = '';
+        if (seamFill) seamFill.style.transition = '';
+      }, 380);
+      packSpin.classList.remove('tearing', 'spinning');
+      packSpin.classList.add('idle');
+      packInner.style.transform = '';
+      packTop.style.transformOrigin = '';
+      if (packTitleEl) packTitleEl.classList.remove('fading');
+    }
+  }
+
+  packSpin.addEventListener('pointerdown', onTearStart);
+  window.addEventListener('pointermove', onTearMove);
+  window.addEventListener('pointerup', onTearEnd);
+  window.addEventListener('pointercancel', onTearEnd);
+
+  let currentPackCards = null;
+
+  async function completeTear() {
+    hideTipNow();
+    if (tearDone) return;
+    tearDone = true;
+    tearActive = false;
+    clearTimeout(holdTimer);
+    clearInterval(holdTimer);
+
+    if (navigator.vibrate) { try { navigator.vibrate(60); } catch (e) {} }
+
+    session.opened++;
+    saveSession();
+
+    const timing = L.openTiming();
+    const contentsPromise = buildPackContents(session.opened);
+    setTearVisual(1);
+    packTop.style.transform = '';
+    packTop.style.transformOrigin = '';
+    packInner.style.transform = '';
+    if (tearFlash && L.current().id === 'trace') {
+      tearFlash.classList.remove('on');
+      void tearFlash.offsetWidth;
+      tearFlash.classList.add('on');
+    }
+    packSpin.classList.remove('tearing');
+    packSpin.classList.add('opening');
+    packTop.style.opacity = '1';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        packTop.style.opacity = '';
+        packTop.classList.add('flyoff');
+      });
+    });
+
+    currentPackCards = await contentsPromise;
+
+    packCardsEl.innerHTML = '';
+    const peek = D.renderCard(currentPackCards[0]);
+    packCardsEl.appendChild(peek);
+    setTimeout(() => {
+      requestAnimationFrame(() => peek.classList.add('rise'));
+    }, timing.rise);
+
+    setTimeout(() => packSpin.classList.add('opened'), timing.opened);
+    setTimeout(() => {
+      const rect = peek.getBoundingClientRect();
+      showReveal(currentPackCards, rect);
+    }, timing.handoff);
+  }
+
+  function resetPack() {
+    tearDone = false;
+    tearProgress = 0;
+    tearDir = 'right';
+    packSpin.classList.remove('opened', 'tearing', 'opening');
+    packTop.classList.remove('flyoff');
+    packTop.style.transform = '';
+    packTop.style.transformOrigin = '';
+    packTop.style.opacity = '';
+    packInner.style.transform = '';
+    if (packTitleEl) packTitleEl.classList.remove('fading');
+    if (tearFlash) tearFlash.classList.remove('on');
+    if (seamFill) {
+      seamFill.style.transform = '';
+      seamFill.style.transformOrigin = '';
+    }
+    if (L.pickTear) L.pickTear();
+    packCardsEl.innerHTML = '';
+    randomizePackArt();
+    updatePacksLeft();
+    packSpin.classList.remove('spinning', 'idle');
+    void packSpin.offsetWidth;
+    packSpin.classList.add('spinning');
+  }
+
+  // ── Reveal: continuity + face-down flips ─────────────
+  const stackZone = document.getElementById('stackZone');
+  stackZone.addEventListener('pointerdown', (e) => {
+    if (phase === 'overview') return;
+    if (phase !== 'swiping' && phase !== 'holding') return;
+    if (swActive) return;
+    const front = wrappers[currentIdx];
+    if (!front) return;
+    swActive = true;
+    swEl = front;
+    swStartX = e.clientX; swStartY = e.clientY; swDx = 0;
+    swLastX = e.clientX; swLastT = performance.now(); swVx = 0;
+    front.style.transition = 'none';
+    e.preventDefault();
+  });
+  const stackCaption = document.getElementById('stackCaption');
+  const swipeNextCue = document.getElementById('swipeNextCue');
+  const btnSave = document.getElementById('btnSave');
+  const btnTryAgain = document.getElementById('btnTryAgain');
+  const keepNote = document.getElementById('keepNote');
+
+  let wrappers = [];
+  let flips = [];
+  let currentIdx = 0;
+  let phase = 'idle'; // dealing | swiping | advancing | holding | overview
+  let overviewTimer = null;
+
+  function T() { return L.transforms(); }
+
+  function cardCaption(card) {
+    if (card.kind === 'prize') {
+      return '<div class="cap-main gold">' + (card.grand ? '🚗 YOU WON THE BIG PRIZE!' : 'You won: ' + card.label) + '</div>' +
+             '<div class="cap-sub">Code ' + card.code + ' · show at the merch stand</div>';
+    }
+    if (card.kind === 'insert') {
+      return '<div class="cap-main dim">Foil Insert</div>';
+    }
+    return '<div class="cap-main">' + card.name + '</div>' +
+           '<div class="cap-sub">' + D.RARITY_LABEL[card.rarity || 'base'] + ' · #' + card.num + ' · ' + card.team + '</div>';
+  }
+
+  function cardEffects(card) {
+    const wrap = wrappers[currentIdx];
+    if (wrap) {
+      wrap.classList.remove('lit');
+      void wrap.offsetWidth;
+      wrap.classList.add('lit');
+    }
+    if (card.kind === 'prize') L.prizeFx(card);
+    else L.passFx();
+  }
+
+  function buildWrapper(card, faceDown) {
+    const wrap = document.createElement('div');
+    wrap.className = 'stack-card';
+    const flip = document.createElement('div');
+    flip.className = 'sc-flip' + (faceDown ? ' facedown' : '');
+    const front = document.createElement('div');
+    front.className = 'sc-face sc-front';
+    front.appendChild(D.renderCard(card));
+    const back = document.createElement('div');
+    back.className = 'sc-face sc-back';
+    back.appendChild(D.renderCardBack());
+    flip.appendChild(front);
+    flip.appendChild(back);
+    wrap.appendChild(flip);
+    return { wrap, flip };
+  }
+
+  function showReveal(cards, fromRect) {
+    show('reveal');
+    stackZone.innerHTML = '';
+    stackCaption.innerHTML = '';
+    swipeNextCue.classList.remove('visible');
+    btnSave.classList.remove('show');
+    btnTryAgain.classList.remove('show');
+    keepNote.classList.remove('show');
+    wrappers = []; flips = [];
+    currentIdx = 0;
+    phase = 'dealing';
+
+    cards.forEach((card, i) => {
+      const { wrap, flip } = buildWrapper(card, i > 0);
+      wrap.style.zIndex = 40 - i;
+      stackZone.appendChild(wrap);
+      wrappers.push(wrap);
+      flips.push(flip);
+      attachSwipe(wrap, i);
+    });
+    markPeek();
+
+    // Card 1: start exactly where the risen pack card was (continuity)
+    const zr = stackZone.getBoundingClientRect();
+    const finalW = L.current().id === 'trace'
+      ? Math.min(window.innerWidth * 0.72, 290)
+      : Math.min(window.innerWidth * 0.62, 250);
+    const zoneCX = zr.left + zr.width / 2;
+    const zoneCY = zr.top + zr.height / 2;
+    if (fromRect && fromRect.width > 0) {
+      const s = fromRect.width / finalW;
+      const dx = (fromRect.left + fromRect.width / 2) - zoneCX;
+      const dy = (fromRect.top + fromRect.height / 2) - zoneCY;
+      wrappers[0].style.transform = 'translate(-50%, -50%) translate(' + dx + 'px, ' + dy + 'px) scale(' + s + ')';
+    } else {
+      wrappers[0].style.transform = T().firstFallback;
+    }
+    wrappers[1].style.transform = T().offR;
+    wrappers[2].style.transform = T().offR;
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const ease = L.current().id === 'salon' ? 'transform 1s cubic-bezier(.22,.7,.2,1)' : 'transform .6s cubic-bezier(.25,.8,.3,1.05)';
+      wrappers[0].style.transition = ease;
+      wrappers[0].style.transform = T().center;
+      setTimeout(() => {
+        stackCaption.innerHTML = cardCaption(cards[0]);
+        cardEffects(cards[0]);
+        wrappers[1].style.transition = 'transform .5s cubic-bezier(.25,.8,.3,1.05)';
+        wrappers[2].style.transition = 'transform .5s cubic-bezier(.25,.8,.3,1.05) .1s';
+        wrappers[1].style.transform = T().peek1;
+        wrappers[2].style.transform = T().peek2;
+        setTimeout(() => {
+          phase = 'swiping';
+          swipeNextCue.classList.add('visible');
+        }, 220);
+      }, 380);
+    }));
+  }
+
+  function markPeek() {
+    wrappers.forEach((w, i) => {
+      w.classList.toggle('peek-only', i !== currentIdx);
+    });
+  }
+
+  function advance() {
+    if ((phase !== 'swiping' && phase !== 'holding') || currentIdx >= wrappers.length - 1) return;
+    phase = 'advancing';
+    stackCaption.innerHTML = '';
+    swipeNextCue.classList.remove('visible');
+
+    const leaving = wrappers[currentIdx];
+    leaving.style.zIndex = 30;
+    leaving.style.transition = 'transform .28s cubic-bezier(.22,.02,.18,1)';
+    leaving.style.transform = T().offL;
+
+    currentIdx++;
+    markPeek();
+    const incoming = wrappers[currentIdx];
+    const behind = wrappers[currentIdx + 1];
+
+    incoming.style.zIndex = 45;
+    incoming.style.transition = 'transform .3s cubic-bezier(.16,.88,.22,1)';
+    incoming.style.transform = T().center;
+    if (behind) {
+      behind.style.transition = 'transform .3s cubic-bezier(.22,.7,.2,1)';
+      behind.style.transform = T().peek1;
+    }
+
+    setTimeout(() => {
+      flips[currentIdx].classList.remove('facedown');
+      setTimeout(() => {
+        const card = currentPackCards[currentIdx];
+        stackCaption.innerHTML = cardCaption(card);
+        cardEffects(card);
+        if (currentIdx >= wrappers.length - 1) {
+          phase = 'holding';
+          overviewTimer = setTimeout(showOverview, 2000);
+        } else {
+          phase = 'swiping';
+          swipeNextCue.classList.add('visible');
+        }
+      }, 420);
+    }, 260);
+  }
+
+  function showOverview() {
+    if (phase === 'overview') return;
+    clearTimeout(overviewTimer);
+    phase = 'overview';
+    swipeNextCue.classList.remove('visible');
+
+    const off = Math.min(window.innerWidth * 0.28, 130);
+    const positions = [
+      'translate(-50%, -50%) translateX(' + (-off) + 'px) rotate(-5deg) scale(.56)',
+      'translate(-50%, -50%) scale(.6)',
+      'translate(-50%, -50%) translateX(' + off + 'px) rotate(5deg) scale(.56)',
+    ];
+    wrappers.forEach((w, i) => {
+      flips[i].classList.remove('facedown');
+      w.style.zIndex = i === 1 ? 44 : 40;
+      w.style.transition = 'transform .55s cubic-bezier(.25,.8,.3,1.08)' + (i === 0 ? '' : ' ');
+      w.style.transform = positions[i];
+    });
+
+    const prize = currentPackCards.find(c => c.kind === 'prize');
+    stackCaption.innerHTML = prize
+      ? cardCaption(prize)
+      : '<div class="cap-main dim">No prize in this pack</div><div class="cap-sub">You keep ONE pack — choose wisely</div>';
+    btnSave.textContent = prize ? 'Save & Redeem' : 'Save to Collection';
+
+    setTimeout(() => {
+      btnSave.classList.add('show');
+      setTimeout(() => {
+        const packsUsed = session.opened;
+        const packsTotal = packCap();
+        const canTryAgain = packsUsed < packsTotal;
+        if (canTryAgain) {
+          const left = packsTotal - packsUsed;
+          btnTryAgain.textContent = 'Or Try Another Pack — ' + left + ' left';
+          btnTryAgain.classList.add('show');
+        }
+        keepNote.classList.add('show');
+      }, 350);
+    }, 500);
+  }
+
+  // swipe handling on stack cards
+  let swActive = false, swEl = null, swDx = 0, swStartX = 0, swStartY = 0;
+  let swLastX = 0, swLastT = 0, swVx = 0;
+
+  function dismissDir() {
+    return L.current().id === 'salon' ? 1 : -1;
+  }
+
+  function attachSwipe(el, idx) {
+    el.addEventListener('pointerdown', (e) => {
+      if (phase === 'overview') return;
+      if (phase !== 'swiping' && phase !== 'holding') return;
+      const front = wrappers[currentIdx];
+      if (!front) return;
+      swActive = true;
+      swEl = front;
+      swStartX = e.clientX; swStartY = e.clientY; swDx = 0;
+      swLastX = e.clientX; swLastT = performance.now(); swVx = 0;
+      front.style.transition = 'none';
+      e.preventDefault();
+    });
+    el.addEventListener('click', () => {
+      if (phase === 'overview') openViewer(currentPackCards[idx]);
+    });
+  }
+
+  function onStackMove(e) {
+    if (!swActive || !swEl) return;
+    const now = performance.now();
+    const dt = now - swLastT;
+    if (dt > 0) swVx = (e.clientX - swLastX) / dt;
+    swLastX = e.clientX;
+    swLastT = now;
+    swDx = e.clientX - swStartX;
+    const dir = dismissDir();
+    const along = dir * swDx;
+    const drag = along > 0 ? swDx : swDx * 0.35;
+    swEl.style.transform = 'translate(-50%, -50%) translateX(' + drag + 'px) rotate(' + (drag * 0.08) + 'deg)';
+    e.preventDefault();
+  }
+
+  function onStackUp(e) {
+    if (!swActive || !swEl) return;
+    if (phase === 'overview') { swActive = false; return; }
+    const front = swEl;
+    swActive = false;
+    swEl = null;
+    const tapped = Math.abs(swDx) < 10 && Math.abs(e.clientY - swStartY) < 10;
+    if (tapped) {
+      front.style.transition = 'transform .28s ease';
+      front.style.transform = T().center;
+      openViewer(currentPackCards[currentIdx]);
+      return;
+    }
+    const dir = dismissDir();
+    const need = Math.max(22, window.innerWidth * 0.06);
+    const along = dir * swDx;
+    const flickAlong = dir * swVx;
+    if (along > need || flickAlong > 0.28) {
+      if (currentIdx >= wrappers.length - 1) showOverview();
+      else advance();
+    } else {
+      front.style.transition = 'transform .28s cubic-bezier(.2,.8,.3,1)';
+      front.style.transform = T().center;
+    }
+  }
+
+  window.addEventListener('pointermove', onStackMove);
+  window.addEventListener('pointerup', onStackUp);
+  window.addEventListener('pointercancel', onStackUp);
+
+  btnTryAgain.addEventListener('click', () => {
+    if (!canOpenPack()) return;
+    currentPackCards = null;
+    resetPack();
+    show('pack');
+  });
+
+  btnSave.addEventListener('click', () => {
+    if (!currentPackCards) return;
+    collection = collection.concat(currentPackCards);
+    lsSet(LS.collection, collection);
+    session.savedAt = Date.now();
+    saveSession();
+    updateChip();
+    slamIntoCollection(currentPackCards.slice());
+    currentPackCards = null;
+  });
+
+  // ── Collection ───────────────────────────────────────
+  const collGrid = document.getElementById('collGrid');
+  const collScroll = document.getElementById('collScroll');
+  const collEmptyMsg = document.getElementById('collEmptyMsg');
+  const collSub = document.getElementById('collSub');
+  const collFooter = document.getElementById('collFooter');
+
+  function renderCollection() {
+    collGrid.innerHTML = '';
+    collEmptyMsg.style.display = collection.length === 0 ? 'block' : 'none';
+    collSub.textContent = collection.length === 0
+      ? 'Saved on this device'
+      : collection.length + ' card' + (collection.length === 1 ? '' : 's') + ' · tap to view';
+
+    collection.slice().reverse().forEach((card) => {
+      const el = D.renderCard(card);
+      el.dataset.cardId = card.id;
+      el.addEventListener('click', () => openViewer(card));
+      collGrid.appendChild(el);
+    });
+    const pad = (3 - (collection.length % 3)) % 3;
+    for (let i = 0; i < pad; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'coll-slot-empty';
+      collGrid.appendChild(slot);
+    }
+  }
+
+  function renderCollFooter() {
+    if (authed) {
+      collFooter.innerHTML =
+        '<div class="signed-in">✓ Signed in — collection saved</div>' +
+        '<div class="rescan-note">Scan the QR on the big screen to rip another pack</div>';
+    } else {
+      collFooter.innerHTML =
+        '<button class="auth-btn auth-google" id="btnGoogle">' +
+          '<svg class="g-logo" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.4 30.1 0 24 0 14.6 0 6.5 5.4 2.5 13.2l7.8 6.1C12.2 13.2 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.3 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.8-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.5 10.8l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.1 0 11.2-2 15-5.5l-7.5-5.8c-2.1 1.4-4.7 2.2-7.5 2.2-6.4 0-11.8-3.7-13.7-9.2l-7.8 6.1C6.5 42.6 14.6 48 24 48z"/></svg>' +
+          'Log in to save — Google</button>' +
+        '<button class="auth-btn auth-apple" id="btnApple"> Sign in with Apple</button>' +
+        '<div class="rescan-note">Scan the QR on the big screen to rip another pack</div>';
+      const fakeAuth = () => {
+        authed = true;
+        lsSet(LS.authed, true);
+        showToast('Signed in — collection saved!');
+        renderCollFooter();
+      };
+      document.getElementById('btnGoogle').addEventListener('click', fakeAuth);
+      document.getElementById('btnApple').addEventListener('click', fakeAuth);
+    }
+  }
+
+  // ── Slam-into-grid animation ─────────────────────────
+  function slamIntoCollection(newCards) {
+    show('collection');
+    renderCollection();
+    renderCollFooter();
+    collScroll.scrollTop = 0;
+
+    const slots = newCards.map(c => collGrid.querySelector('[data-card-id="' + c.id + '"]'));
+    slots.forEach(s => { if (s) s.style.visibility = 'hidden'; });
+
+    newCards.forEach((card, i) => {
+      setTimeout(() => {
+        const slot = slots[i];
+        if (!slot) return;
+        const r = slot.getBoundingClientRect();
+        const W = Math.min(window.innerWidth * 0.55, 230);
+        const startX = (window.innerWidth - W) / 2;
+        const startY = window.innerHeight * 0.22;
+
+        const clone = D.renderCard(card);
+        clone.classList.add('slam-clone');
+        clone.style.setProperty('--cardw', W + 'px');
+        clone.style.width = W + 'px';
+        clone.style.left = startX + 'px';
+        clone.style.top = startY + 'px';
+        document.body.appendChild(clone);
+
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          const s = r.width / W;
+          clone.style.transform = 'translate(' + (r.left - startX) + 'px, ' + (r.top - startY) + 'px) scale(' + s + ')';
+        }));
+
+        setTimeout(() => {
+          clone.remove();
+          slot.style.visibility = '';
+          slot.classList.add('slam-hit');
+          collGrid.classList.remove('grid-shake');
+          void collGrid.offsetWidth;
+          collGrid.classList.add('grid-shake');
+          if (navigator.vibrate) { try { navigator.vibrate(30); } catch (e) {} }
+        }, 540);
+      }, i * 340);
+    });
+  }
+
+  // ── 3D card viewer ───────────────────────────────────
+  const viewer = document.getElementById('viewer');
+  const viewerHolder = document.getElementById('viewerHolder');
+  let vRotY = 0, vRotX = 0;
+  let vDragging = false, vLastX = 0, vLastY = 0;
+  let vDownX = 0, vDownY = 0;
+  let vIdleRaf = null, vIdleT = 0;
+  let viewerCardEl = null;
+
+  function applyViewerTransform() {
+    viewerHolder.style.transform = 'rotateY(' + vRotY + 'deg) rotateX(' + vRotX + 'deg)';
+    if (viewerCardEl) {
+      const norm = ((vRotY % 360) + 360) % 360;
+      const alpha = Math.max(0, Math.cos((norm / 180) * Math.PI)) * 0.35;
+      viewerCardEl.style.setProperty('--glare-angle', (90 + norm) + 'deg');
+      viewerCardEl.style.setProperty('--glare-alpha', alpha.toFixed(3));
+    }
+  }
+
+  function idleSpin() {
+    if (!viewer.classList.contains('active')) return;
+    if (!vDragging) {
+      vIdleT += 0.016;
+      vRotY += Math.sin(vIdleT * 0.9) * 0.12 + 0.08;
+      vRotX += (0 - vRotX) * 0.02;
+      applyViewerTransform();
+    }
+    vIdleRaf = requestAnimationFrame(idleSpin);
+  }
+
+  function openViewer(card) {
+    viewerHolder.innerHTML = '';
+    viewerCardEl = D.renderCard(card);
+    viewerHolder.appendChild(viewerCardEl);
+    const backEl = D.renderCardBack();
+    backEl.classList.add('viewer-back');
+    viewerHolder.appendChild(backEl);
+    vRotY = 0; vRotX = 0; vIdleT = 0;
+    applyViewerTransform();
+    viewer.classList.add('active');
+    cancelAnimationFrame(vIdleRaf);
+    vIdleRaf = requestAnimationFrame(idleSpin);
+  }
+
+  viewer.addEventListener('pointerdown', (e) => {
+    vDragging = true;
+    vLastX = e.clientX; vLastY = e.clientY;
+    vDownX = e.clientX; vDownY = e.clientY;
+    e.preventDefault();
+  });
+  viewer.addEventListener('pointermove', (e) => {
+    if (!vDragging) return;
+    vRotY += (e.clientX - vLastX) * 0.45;
+    vRotX = Math.max(-25, Math.min(25, vRotX - (e.clientY - vLastY) * 0.25));
+    vLastX = e.clientX; vLastY = e.clientY;
+    applyViewerTransform();
+    e.preventDefault();
+  });
+  viewer.addEventListener('pointerup', (e) => {
+    vDragging = false;
+    // a plain tap (no rotate-drag) outside the card closes the viewer
+    const moved = Math.abs(e.clientX - vDownX) > 8 || Math.abs(e.clientY - vDownY) > 8;
+    if (!moved && !viewerHolder.contains(e.target)) {
+      viewer.classList.remove('active');
+      cancelAnimationFrame(vIdleRaf);
+    }
+  });
+  viewer.addEventListener('pointercancel', () => { vDragging = false; });
+  document.getElementById('viewerClose').addEventListener('click', (e) => {
+    e.stopPropagation();
+    viewer.classList.remove('active');
+    cancelAnimationFrame(vIdleRaf);
+  });
+
+  function syncLookChrome() {
+    const look = L.current();
+    swipeNextCue.innerHTML = look.id === 'salon'
+      ? '<span class="finger">👉</span>Swipe right for the next card'
+      : '<span class="finger">👈</span>Swipe left for the next card';
+  }
+
+  function closeLooks() {
+    document.getElementById('looksSheet').classList.remove('open');
+  }
+
+  function openLooks() {
+    const sheet = document.getElementById('looksSheet');
+    L.renderSheet(document.getElementById('looksList'), (look) => {
+      L.apply(look.id);
+      syncLookChrome();
+      closeLooks();
+      if (views.pack.classList.contains('active') && !tearDone) resetPack();
+      showToast(look.name + ' look ready — rip the pack');
+    }, (look) => {
+      L.prizeFx({ grand: false }, look);
+    });
+    sheet.classList.add('open');
+  }
+
+  document.getElementById('looksChip').addEventListener('click', openLooks);
+  document.getElementById('looksBackdrop').addEventListener('click', closeLooks);
+
+  // ── Boot ─────────────────────────────────────────────
+  S.ready.then(() => {
+    newSession();
+    updatePacksLeft();
+    syncLookChrome();
+    setTimeout(showTip, 1600);
+  });
+})();
+</script>
+</body>
+</html>

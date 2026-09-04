@@ -1,0 +1,543 @@
+/* Four complete pack recipes. CSS only — no filters on the pack (those are expensive). */
+
+.top-actions { display: flex; align-items: center; gap: 8px; }
+.looks-chip {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,.9);
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 99px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.looks-chip b { color: #ffb347; font-weight: 900; }
+
+.looks-sheet {
+  position: fixed; inset: 0;
+  z-index: 200;
+  display: none;
+}
+.looks-sheet.open { display: block; touch-action: auto; }
+.looks-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(6, 10, 16, .62);
+}
+.looks-panel {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  max-height: min(88dvh, 720px);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  background: linear-gradient(180deg, #1a2433 0%, #101820 100%);
+  border-radius: 22px 22px 0 0;
+  padding: 10px 16px calc(18px + env(safe-area-inset-bottom));
+  box-shadow: 0 -20px 60px rgba(0,0,0,.45);
+  touch-action: pan-y;
+}
+.looks-handle {
+  width: 42px; height: 4px; border-radius: 99px;
+  background: rgba(255,255,255,.22);
+  margin: 4px auto 14px;
+}
+.looks-panel h2 {
+  font-size: 15px; letter-spacing: 3px; text-transform: uppercase;
+}
+.looks-lead {
+  margin: 6px 0 14px;
+  font-size: 13px; color: rgba(255,255,255,.55); line-height: 1.45;
+}
+.look-card {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  color: #fff;
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  margin-bottom: 10px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.look-card.on {
+  border-color: rgba(255,179,71,.7);
+  background: linear-gradient(160deg, rgba(255,179,71,.12), rgba(255,255,255,.04));
+  box-shadow: 0 0 0 1px rgba(255,179,71,.2);
+}
+.look-card .lk-top {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+}
+.look-card .lk-name { font-weight: 900; font-size: 16px; letter-spacing: .08em; text-transform: uppercase; }
+.look-card .lk-tag { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #ffb347; }
+.look-card .lk-how {
+  margin: 8px 0 10px;
+  font-size: 13px; color: rgba(255,255,255,.7); line-height: 1.4;
+}
+.look-card dl {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 5px 10px;
+  font-size: 12px; line-height: 1.35;
+}
+.look-card dt { color: rgba(255,255,255,.38); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.look-card dd { color: rgba(255,255,255,.86); margin: 0; }
+.look-card .lk-preview {
+  margin-top: 10px;
+  font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  color: rgba(255,255,255,.55);
+  background: transparent; border: 1px solid rgba(255,255,255,.16);
+  border-radius: 99px; padding: 7px 12px;
+  font-family: inherit; cursor: pointer;
+}
+
+/* ── Entrances ── */
+body.look-case .pack-spin.spinning {
+  animation: packDrop .72s cubic-bezier(.22,.8,.28,1) both,
+             packIdle 5s 1.05s ease-in-out infinite alternate;
+}
+body.look-vault .pack-spin.spinning {
+  animation: packVault .95s cubic-bezier(.2,.7,.2,1) both,
+             packIdle 6s 1.2s ease-in-out infinite alternate;
+}
+body.look-salon .pack-spin.spinning {
+  animation: packSalon 1.15s cubic-bezier(.22,.7,.28,1) both,
+             packIdleSalon 7s 1.4s ease-in-out infinite alternate;
+}
+@keyframes packDrop {
+  0% { transform: translateY(72px) scale(.9); opacity: 0; }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes packVault {
+  0% { transform: translateY(-110px) rotateX(16deg) scale(.86); opacity: 0; }
+  65% { opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes packSalon {
+  0% { transform: scale(.9) rotateY(-8deg); opacity: 0; }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes packIdleSalon {
+  0% { transform: rotateY(-6deg) rotateX(2deg) translateY(0); }
+  100% { transform: rotateY(6deg) rotateX(-2deg) translateY(-6px); }
+}
+
+/* ── Crimp is the default extract in card-player.html ── */
+
+/* Case — pack tips back and empties; card deals up */
+body.look-case .pack-lid.flyoff {
+  transition: transform .48s cubic-bezier(.22,.8,.2,1), opacity .3s .18s ease;
+  transform: translateY(-55%) rotate(3deg) !important;
+}
+body.look-case .pack-spin.opening .pack-inner {
+  transition: transform .86s .3s cubic-bezier(.28,.6,.2,1);
+  transform: translateY(36%) rotate(7deg) scale(.95);
+}
+body.look-case .pack-spin.opened .pack-inner {
+  transform: translateY(58%) rotate(10deg) scale(.9);
+  opacity: 0;
+}
+body.look-case .pack-cards .tcard {
+  transform: translate(-50%, 48%);
+}
+body.look-case .pack-cards .tcard.rise {
+  transform: translate(-50%, -52%);
+  transition: transform .82s cubic-bezier(.18,.82,.22,1);
+}
+
+/* Vault — pack sinks and shrinks; card blooms out of the mouth */
+body.look-vault .pack-lid.flyoff {
+  transition: transform .5s cubic-bezier(.18,.85,.18,1), opacity .28s .16s ease;
+  transform: translateY(-90%) rotate(-2deg) !important;
+}
+body.look-vault .pack-spin.opening .pack-inner {
+  transition: transform .78s .28s cubic-bezier(.2,.75,.2,1);
+  transform: translateY(34%) scale(.86);
+}
+body.look-vault .pack-spin.opened .pack-inner {
+  transform: translateY(52%) scale(.78);
+  opacity: 0;
+}
+body.look-vault .pack-cards .tcard {
+  transform: translate(-50%, 36%) scale(.72);
+}
+body.look-vault .pack-cards .tcard.rise {
+  transform: translate(-50%, -62%) scale(1);
+  transition: transform .78s cubic-bezier(.16,.88,.24,1.04);
+}
+
+/* Salon — slow lower, delayed rise, a presentation */
+body.look-salon .pack-lid.flyoff {
+  transition: transform .85s cubic-bezier(.42,.16,.2,1), opacity .45s .35s ease;
+  transform: translateY(-48%) rotate(-3deg) !important;
+}
+body.look-salon .pack-spin.opening .pack-inner {
+  transition: transform 1.15s .42s cubic-bezier(.36,.2,.2,1);
+  transform: translateY(20%) scale(.98);
+}
+body.look-salon .pack-spin.opened .pack-inner {
+  transform: translateY(36%) scale(.96);
+  opacity: 0;
+  transition-duration: .9s;
+}
+body.look-salon .pack-cards .tcard {
+  transform: translate(-50%, 46%);
+}
+body.look-salon .pack-cards .tcard.rise {
+  transform: translate(-50%, -50%);
+  transition: transform 1.15s .12s cubic-bezier(.22,.7,.2,1);
+}
+
+body.look-case .seam-idle {
+  background: linear-gradient(90deg, transparent, rgba(255,210,140,.5), transparent);
+}
+body.look-vault .seam-idle {
+  background: linear-gradient(90deg, transparent, rgba(180,210,255,.55), transparent);
+  box-shadow: 0 0 10px rgba(160,200,255,.28);
+}
+body.look-salon .seam-idle {
+  background: linear-gradient(90deg, transparent, rgba(255,230,190,.65), transparent);
+}
+
+/* Reveal card lighting — cheap, GPU-friendly */
+.stack-card.lit .tcard {
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.45),
+    0 0 0 1px rgba(255,255,255,.08);
+}
+body.look-case .stack-card.lit .tcard {
+  box-shadow:
+    0 22px 50px rgba(0,0,0,.5),
+    0 0 28px rgba(255,196,110,.18);
+}
+body.look-vault .stack-card.lit .tcard {
+  box-shadow:
+    0 16px 36px rgba(0,0,0,.45),
+    0 0 24px rgba(160,200,255,.22);
+}
+body.look-salon .stack-card.lit .tcard {
+  box-shadow:
+    0 26px 56px rgba(0,0,0,.55),
+    0 0 0 1px rgba(255,230,190,.2);
+}
+body.look-salon .sc-flip { transition-duration: .85s; }
+
+/* Prize / passage FX — CSS only, one layer */
+.fx-layer {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 90;
+  overflow: hidden;
+}
+.fx-bloom {
+  position: absolute; left: 50%; top: 42%;
+  width: 40px; height: 40px; margin: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,214,140,.55), rgba(255,170,60,.12) 42%, transparent 70%);
+  animation: fxBloom .9s ease-out forwards;
+}
+@keyframes fxBloom {
+  0% { transform: scale(.4); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: scale(16); opacity: 0; }
+}
+.fx-prism {
+  position: absolute; inset: 0;
+  background: conic-gradient(from 200deg, transparent 0 40%, rgba(255,255,255,.1) 50%, transparent 60%);
+  mix-blend-mode: screen;
+  animation: fxPrism .7s ease-out forwards;
+}
+@keyframes fxPrism {
+  0% { opacity: 0; transform: scale(1.08); }
+  20% { opacity: .9; }
+  100% { opacity: 0; transform: scale(1); }
+}
+.fx-streak {
+  position: absolute; left: -20%; top: 28%;
+  width: 140%; height: 18%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.28), transparent);
+  transform: rotate(-18deg);
+  animation: fxStreak .55s ease-out forwards;
+}
+@keyframes fxStreak {
+  0% { transform: translateX(-30%) rotate(-18deg); opacity: 0; }
+  30% { opacity: .7; }
+  100% { transform: translateX(20%) rotate(-18deg); opacity: 0; }
+}
+.fx-spot {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 42% 38% at 50% 44%, rgba(255,230,190,.16), transparent 62%);
+  animation: fxSpot 1.15s ease-out forwards;
+}
+@keyframes fxSpot {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.fx-ring {
+  position: absolute; left: 50%; top: 44%;
+  width: 90px; height: 90px; margin: -45px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,220,170,.55);
+  animation: fxRing .85s ease-out forwards;
+}
+@keyframes fxRing {
+  0% { transform: scale(.35); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: scale(3.4); opacity: 0; }
+}
+.fx-glare {
+  position: absolute; left: 50%; top: 22%;
+  width: min(62vw, 250px); height: min(86vw, 350px);
+  margin-left: calc(min(62vw, 250px) / -2);
+  background: linear-gradient(115deg, transparent 36%, rgba(255,255,255,.22) 50%, transparent 64%);
+  background-size: 220% 220%;
+  animation: fxGlare .7s ease-out forwards;
+  border-radius: 16px;
+  mix-blend-mode: screen;
+}
+@keyframes fxGlare {
+  0% { background-position: 0% 40%; opacity: 0; }
+  30% { opacity: .85; }
+  100% { background-position: 100% 60%; opacity: 0; }
+}
+
+.pouch-lip, .rip-edge, .lid-rip, .tear-flash, .trace-head, .seam-glow-path { display: none; }
+
+/* ── Trace — Pocket-faithful open on a phone-sized light stage ── */
+body.look-trace {
+  background: radial-gradient(120% 70% at 50% 42%, #f7fafc 0%, #e4eef6 58%, #d4e4f2 100%);
+  color: #2a3544;
+}
+body.look-trace::before { opacity: 0; }
+body.look-trace .brand { color: rgba(42, 53, 68, .5); }
+body.look-trace .brand span { color: #3a7ca5; }
+body.look-trace .looks-chip,
+body.look-trace .coll-chip {
+  color: rgba(42, 53, 68, .78);
+  background: rgba(255, 255, 255, .62);
+  border-color: rgba(42, 53, 68, .12);
+}
+body.look-trace .looks-chip b { color: #2b6f9a; }
+
+body.look-trace #viewPack {
+  justify-content: center;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 56px);
+}
+body.look-trace .pack-title {
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: .01em;
+  text-transform: none;
+  color: #6b7a8a;
+  margin-bottom: 14px;
+  transition: opacity .2s ease;
+}
+body.look-trace .pack-title.fading { opacity: 0; }
+body.look-trace .pack-scene { margin-bottom: 10px; }
+body.look-trace .pack-spin {
+  width: min(80vw, 318px);
+  --cardw: calc(min(80vw, 318px) * .82);
+}
+body.look-trace .pack-spin.spinning {
+  animation: packTraceIn .68s cubic-bezier(.22, .8, .28, 1) both,
+             packIdleTrace 6.2s .85s ease-in-out infinite alternate;
+}
+@keyframes packTraceIn {
+  0% { transform: translateY(28px) rotateY(16deg) scale(.93); opacity: 0; }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes packIdleTrace {
+  0% { transform: rotateY(-3.5deg) rotateX(1.6deg) translateY(0); }
+  100% { transform: rotateY(3.5deg) rotateX(-1.2deg) translateY(-5px); }
+}
+body.look-trace .pack-inner {
+  box-shadow: 0 22px 48px rgba(70, 100, 130, .26);
+}
+body.look-trace .pack-lid { height: 21.5%; }
+body.look-trace .pack-mouth { height: 21.5%; }
+body.look-trace .pack-seam { top: 16.6%; height: 34px; }
+body.look-trace .seam-idle-path {
+  stroke: rgba(255, 106, 213, .82);
+  stroke-width: 2.05;
+  filter: drop-shadow(0 0 4px rgba(255, 106, 213, .55)) drop-shadow(0 0 7px rgba(90, 210, 255, .4));
+}
+body.look-trace .seam-fill-path {
+  stroke: url(#seamHot);
+  stroke-width: 2.4;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, .95));
+}
+body.look-trace .seam-glow-path {
+  display: block;
+  stroke: url(#seamPocket);
+  stroke-width: 6.2;
+  stroke-linecap: round;
+  opacity: .88;
+  filter: drop-shadow(0 0 6px rgba(255, 106, 213, .7));
+}
+body.look-trace .pack-spin.tearing .seam-idle-path { opacity: .2; }
+body.look-trace .pack-spin.opening .pack-seam {
+  opacity: .28;
+  transition: opacity .45s .1s;
+}
+body.look-trace .trace-head {
+  display: block;
+  position: absolute;
+  top: 18.2%;
+  left: calc(5% + (var(--tear-p, 0) * 90%));
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 30%, #ff6ad5 52%, rgba(126, 240, 255, .15) 68%, transparent 74%);
+  box-shadow: 0 0 16px rgba(255, 106, 213, .75), 0 0 28px rgba(126, 240, 255, .4);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+body.look-trace .pack-spin.tearing .trace-head { opacity: 1; }
+body.look-trace .pack-spin.tearing .pack-lid { opacity: 1; }
+
+body.look-trace .pouch-lip {
+  display: block;
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: 15.5%;
+  height: 16px;
+  border-radius: 50% 50% 40% 40% / 90% 90% 20% 20%;
+  background: linear-gradient(180deg, #f6f8fb 0%, #c5d0dc 55%, #8b98a8 100%);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .12), inset 0 2px 3px rgba(255, 255, 255, .7);
+  z-index: 3;
+  opacity: 0;
+  pointer-events: none;
+}
+body.look-trace .pack-spin.opening .pouch-lip,
+body.look-trace .pack-spin.opened .pouch-lip { opacity: 1; }
+body.look-trace .pack-mouth {
+  background:
+    radial-gradient(80% 70% at 50% 110%, rgba(255, 255, 255, .5), transparent 52%),
+    linear-gradient(180deg, #e8eef4 0%, #9aa8b8 42%, #2c3544 100%);
+}
+
+body.look-trace .rip-edge,
+body.look-trace .lid-rip {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 10px;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(90deg, #7ef0ff, #fff 40%, #ff6ad5 78%, #ffe29a);
+  box-shadow: 0 0 10px rgba(126, 240, 255, .85), 0 0 18px rgba(255, 106, 213, .45);
+}
+body.look-trace .lid-rip { bottom: 0; }
+body.look-trace .rip-edge { top: 0; z-index: 9; }
+body.look-trace .pack-spin.opening .rip-edge,
+body.look-trace .pack-spin.opening .lid-rip,
+body.look-trace .pack-spin.opened .rip-edge,
+body.look-trace .pack-spin.opened .lid-rip { opacity: .92; }
+
+body.look-trace .tear-flash {
+  display: block;
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  top: 16%;
+  height: 18px;
+  z-index: 14;
+  pointer-events: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, transparent, #fff 30%, #fff 70%, transparent);
+  box-shadow: 0 0 18px #fff, 0 0 28px rgba(126, 240, 255, .7), 0 0 22px rgba(255, 106, 213, .45);
+  opacity: 0;
+}
+body.look-trace .tear-flash.on { animation: tearSnap .22s ease-out forwards; }
+@keyframes tearSnap {
+  0% { opacity: 0; transform: scaleX(.2); }
+  35% { opacity: 1; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1.04); }
+}
+
+body.look-trace .pack-lid.flyoff {
+  transition: transform .72s cubic-bezier(.18, .72, .2, 1), opacity .42s .32s ease;
+  transform: translate3d(16%, -78%, 36px) rotateZ(24deg) rotateX(-26deg) !important;
+  pointer-events: none;
+}
+body.look-trace .pack-spin.opening .pack-lid.flyoff { opacity: 1; }
+body.look-trace .pack-spin.opened .pack-lid.flyoff { opacity: 0; }
+
+body.look-trace .pack-spin.opening .pack-inner {
+  transition: transform .82s .32s cubic-bezier(.28, .55, .2, 1);
+  transform: translateY(16%) rotateX(-7deg) scale(.985);
+}
+body.look-trace .pack-spin.opened .pack-inner {
+  transition: transform .55s cubic-bezier(.3, .2, .2, 1), opacity .4s ease;
+  transform: translateY(40%) rotateX(-11deg) scale(.94);
+  opacity: 0;
+}
+body.look-trace .pack-spin.opening .pack-front {
+  transform: translateZ(9px) rotateX(-6deg);
+}
+body.look-trace .pack-well { top: 18%; }
+body.look-trace .pack-cards .tcard {
+  --cardw: calc(min(80vw, 318px) * .82);
+  transform: translate(-50%, 78%) scale(.86);
+}
+body.look-trace .pack-cards .tcard.rise {
+  transform: translate(-50%, -92%) scale(1.04);
+  transition: transform .62s cubic-bezier(.16, .84, .22, 1);
+}
+
+body.look-trace .packs-left { color: #8a97a6; }
+body.look-trace .packs-left b { color: #2b6f9a; }
+body.look-trace .tip-text {
+  text-transform: none;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0;
+  color: #5a6b7c;
+  text-shadow: none;
+}
+body.look-trace .tip-track .tip-dash {
+  background: linear-gradient(90deg, transparent, rgba(255, 120, 210, .9), rgba(126, 240, 255, .7), transparent);
+  box-shadow: 0 0 14px rgba(255, 120, 210, .5);
+}
+body.look-trace .stack-card { width: min(72vw, 290px); }
+body.look-trace .sc-face .tcard { --cardw: min(72vw, 290px); }
+body.look-trace .stack-caption .cap-main { color: #1e2a38; }
+body.look-trace .stack-caption .cap-sub { color: #6b7a8a; }
+body.look-trace .swipe-next-cue { color: #5a6b7c; }
+body.look-trace .btn-ghost {
+  color: #1e2a38;
+  background: rgba(255, 255, 255, .65);
+  border-color: rgba(30, 42, 56, .14);
+}
+body.look-trace .keep-note { color: #6b7a8a; }
+body.look-trace .fx-halo {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 48px;
+  height: 48px;
+  margin: -24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .7), rgba(126, 240, 255, .22) 40%, transparent 70%);
+  animation: fxBloom .85s ease-out forwards;
+}
+body.look-trace .toast {
+  background: rgba(255, 255, 255, .92);
+  color: #1e2a38;
+  border-color: rgba(30, 42, 56, .12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pack-spin.spinning, body.look-case .pack-spin.spinning,
+  body.look-vault .pack-spin.spinning, body.look-salon .pack-spin.spinning,
+  body.look-trace .pack-spin.spinning {
+    animation: none !important;
+    opacity: 1;
+  }
+  .fx-layer > * { animation-duration: .01s !important; }
+}

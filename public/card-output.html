@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vixi Prize Packs — Prize Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Lato', system-ui, -apple-system, sans-serif;
+    background:
+      radial-gradient(120% 90% at 50% 0%, #223047 0%, #16202f 55%, #0d141f 100%);
+    color: #fff;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  /* Subtle triangle-facet texture like the mockups */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(60deg, rgba(255,255,255,.018) 25%, transparent 25.5%),
+      linear-gradient(-60deg, rgba(255,255,255,.018) 25%, transparent 25.5%),
+      linear-gradient(60deg, transparent 74.5%, rgba(0,0,0,.12) 75%),
+      linear-gradient(-60deg, transparent 74.5%, rgba(0,0,0,.12) 75%);
+    background-size: 140px 242px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(36px, 5vw, 90px);
+    z-index: 2;
+    width: 100%;
+    max-width: 1560px;
+    padding: 0 40px;
+  }
+
+  /* ── QR column ───────────────────────────────────── */
+  .qr-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(10px, 1.5vh, 18px);
+    flex-shrink: 0;
+    z-index: 2;
+  }
+  .qr-label {
+    font-weight: 700;
+    font-size: clamp(10px, 1.2vw, 14px);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,.55);
+  }
+  .qr-badge {
+    width: clamp(110px, 11vw, 170px);
+    height: clamp(110px, 11vw, 170px);
+    background: #fff;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,.35);
+    padding: 8px;
+  }
+  .qr-badge canvas, .qr-badge img { display: block; width: 100% !important; height: 100% !important; }
+  .scans-label {
+    font-weight: 700;
+    font-size: clamp(10px, 1.2vw, 14px);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: rgba(255,255,255,.5);
+    margin-top: clamp(4px, .6vh, 8px);
+  }
+  .scans-num {
+    font-weight: 900;
+    font-size: clamp(30px, 4vw, 52px);
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0,0,0,.3);
+  }
+  .mode-pill {
+    margin-top: 4px;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.4);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 99px;
+    padding: 3px 12px;
+  }
+  .mode-pill.local { color: #ffb347; border-color: rgba(255,179,71,.4); }
+
+  /* ── Center: title + card fan ────────────────────── */
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .hero-kicker {
+    font-weight: 700;
+    font-size: clamp(11px, 1.3vw, 16px);
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    color: #ffb347;
+    margin-bottom: 6px;
+  }
+  .hero-title {
+    font-weight: 900;
+    font-size: clamp(30px, 4.4vw, 58px);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    text-shadow: 0 4px 18px rgba(0,0,0,.4);
+    margin-bottom: clamp(18px, 3vh, 36px);
+    text-align: center;
+    line-height: 1.1;
+  }
+
+  .fan {
+    position: relative;
+    width: clamp(320px, 32vw, 520px);
+    height: clamp(300px, 30vw, 480px);
+  }
+  .fan .tcard {
+    position: absolute;
+    left: 50%; top: 50%;
+    --cardw: clamp(150px, 14vw, 230px);
+    transform-origin: 50% 120%;
+    animation: fanFloat 5s ease-in-out infinite alternate;
+    box-shadow: 0 20px 50px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.08);
+  }
+  @keyframes fanFloat {
+    0% { margin-top: 0; }
+    100% { margin-top: -10px; }
+  }
+
+  .drop-ticker {
+    margin-top: clamp(14px, 2.5vh, 28px);
+    text-align: center;
+  }
+  .drop-ticker-label {
+    font-weight: 700;
+    font-size: clamp(10px, 1.2vw, 14px);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: rgba(255,255,255,.5);
+  }
+  .drop-ticker-num {
+    font-weight: 900;
+    font-size: clamp(26px, 3.6vw, 44px);
+    color: #fff;
+  }
+  .drop-ticker-num.hot { color: #ff6b4a; animation: hotPulse 1s ease-in-out infinite; }
+  @keyframes hotPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+  }
+  .drop-bar {
+    width: clamp(220px, 22vw, 340px);
+    height: 10px;
+    margin: 10px auto 0;
+    background: rgba(0,0,0,.35);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .drop-bar-fill {
+    height: 100%;
+    width: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #ffb347, #ff6b4a);
+    transition: width .5s cubic-bezier(.22,1,.36,1);
+  }
+
+  /* ── Drop countdown / start button ───────────────── */
+  .drop-control {
+    margin-top: clamp(12px, 2vh, 22px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-height: clamp(58px, 7vh, 84px);
+  }
+  .start-btn {
+    border: none;
+    border-radius: 99px;
+    font-family: inherit;
+    font-weight: 900;
+    font-size: clamp(13px, 1.5vw, 18px);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: clamp(12px, 1.6vh, 18px) clamp(28px, 3vw, 44px);
+    background: linear-gradient(90deg, #ffb347, #ff6b4a);
+    color: #1a1208;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(255,107,74,.35);
+    animation: startPulse 2s ease-in-out infinite;
+  }
+  @keyframes startPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+  }
+  .countdown-label {
+    font-weight: 700;
+    font-size: clamp(10px, 1.2vw, 14px);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: rgba(255,255,255,.5);
+  }
+  .countdown {
+    font-weight: 900;
+    font-size: clamp(38px, 5.4vw, 68px);
+    line-height: 1;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 4px 18px rgba(0,0,0,.4);
+  }
+  .countdown.hot { color: #ff6b4a; animation: hotPulse .8s ease-in-out infinite; }
+  .drop-ended-tag {
+    font-weight: 900;
+    font-size: clamp(16px, 2vw, 24px);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #ff9c9c;
+  }
+
+  /* ── Prize rows ──────────────────────────────────── */
+  .prizes {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(14px, 2vh, 24px);
+  }
+  .prize-row {
+    display: flex;
+    align-items: center;
+    gap: clamp(14px, 2vw, 24px);
+    background: rgba(255,255,255,.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 20px;
+    padding: clamp(14px, 2vw, 24px) clamp(18px, 2.5vw, 32px);
+    position: relative;
+    overflow: hidden;
+    min-width: clamp(300px, 33vw, 480px);
+  }
+  .prize-row.sold-out { opacity: .45; }
+  .prize-row.sold-out::after {
+    content: 'ALL CLAIMED';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%) rotate(-12deg);
+    font-weight: 900;
+    font-size: clamp(16px, 2vw, 24px);
+    letter-spacing: 3px;
+    color: #fff;
+    background: rgba(190,45,45,.88);
+    padding: 6px 20px;
+    border-radius: 6px;
+    z-index: 5;
+    white-space: nowrap;
+  }
+  .prize-icon { font-size: clamp(32px, 4vw, 54px); flex-shrink: 0; }
+  .prize-info { flex: 1; min-width: 0; }
+  .prize-label {
+    font-weight: 900;
+    font-size: clamp(14px, 1.7vw, 21px);
+    color: #fff;
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+  .prize-bar-wrap {
+    width: 100%;
+    height: clamp(8px, 1vw, 12px);
+    background: rgba(0,0,0,.3);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .prize-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #8ec5ff, #fff);
+    transition: width .5s cubic-bezier(.22,1,.36,1);
+    width: 0%;
+  }
+  .prize-remaining {
+    margin-top: 4px;
+    font-weight: 700;
+    font-size: clamp(9px, 1vw, 12px);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,.45);
+  }
+  .prize-count {
+    text-align: center;
+    flex-shrink: 0;
+    min-width: clamp(70px, 7vw, 100px);
+  }
+  .prize-count .num {
+    font-weight: 900;
+    font-size: clamp(26px, 3.2vw, 44px);
+    line-height: 1;
+    display: block;
+  }
+  .prize-count .of-total {
+    font-weight: 700;
+    font-size: clamp(11px, 1.3vw, 15px);
+    color: rgba(255,255,255,.45);
+  }
+  .prize-flash {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle, rgba(255,255,255,.16) 0%, transparent 70%);
+    opacity: 0; pointer-events: none; border-radius: 20px;
+    transition: opacity .4s;
+  }
+  .prize-flash.active { opacity: 1; transition: opacity 0s; }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.22); }
+    100% { transform: scale(1); }
+  }
+  .pop { animation: pop .35s cubic-bezier(.17,.67,.29,1.4); }
+
+  /* ── Grand prize row ─────────────────────────────── */
+  .prize-row.grand {
+    background: linear-gradient(135deg, rgba(255,215,0,.14), rgba(255,120,0,.08));
+    border: none;
+    transform: scale(0);
+    opacity: 0;
+    z-index: 1;
+  }
+  .prize-row.grand::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 23px;
+    background: conic-gradient(#ffd700, #ffaa00, #ff8c00, #ffd700, #fff8dc, #ffd700, #ffaa00, #ff8c00, #ffd700);
+    z-index: -2;
+    animation: spinBorder 3s linear infinite;
+  }
+  .prize-row.grand::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #241c10 0%, #17110a 100%);
+    z-index: -1;
+  }
+  @keyframes spinBorder {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+  }
+  .prize-row.grand.revealed {
+    animation: grandReveal .8s cubic-bezier(.17,.67,.29,1.4) both,
+               grandGlow 2s 1s ease-in-out infinite alternate;
+  }
+  @keyframes grandGlow {
+    0% { box-shadow: 0 0 20px rgba(255,215,0,.3), 0 0 60px rgba(255,215,0,.1); }
+    100% { box-shadow: 0 0 30px rgba(255,215,0,.5), 0 0 90px rgba(255,215,0,.25); }
+  }
+  @keyframes grandReveal {
+    0% { transform: scale(0) rotate(-5deg); opacity: 0; }
+    60% { transform: scale(1.08) rotate(1deg); opacity: 1; }
+    80% { transform: scale(0.97) rotate(0deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  .prize-row.grand .prize-label {
+    background: linear-gradient(90deg, #ffd700, #ffaa00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: clamp(16px, 2.1vw, 25px);
+  }
+  .prize-row.grand .prize-bar-fill { background: linear-gradient(90deg, #ffd700, #ffaa00); }
+  .prize-row.grand .prize-count .num { color: #ffd700; }
+  .prize-row.grand .prize-icon {
+    font-size: clamp(40px, 5vw, 64px);
+    animation: grandPulse 2s ease-in-out infinite;
+  }
+  @keyframes grandPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+  .grand-flash {
+    position: fixed; inset: 0;
+    z-index: 200;
+    background: radial-gradient(circle, rgba(255,215,0,.4) 0%, rgba(255,215,0,0) 70%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s;
+  }
+  .grand-flash.active { opacity: 1; transition: opacity 0s; }
+
+  /* ── Config menu ─────────────────────────────────── */
+  .gear-btn {
+    position: fixed;
+    bottom: 18px; right: 18px;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.15);
+    color: rgba(255,255,255,.6);
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 300;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .3s, background .3s;
+  }
+  .gear-btn:hover { background: rgba(255,255,255,.16); transform: rotate(45deg); }
+
+  .reset-btn {
+    position: fixed;
+    bottom: 18px; right: 72px;
+    height: 44px;
+    border-radius: 99px;
+    background: rgba(190,45,45,.18);
+    border: 1px solid rgba(190,45,45,.55);
+    color: #ff9c9c;
+    font-family: inherit;
+    font-weight: 900;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 0 20px;
+    cursor: pointer;
+    z-index: 300;
+    transition: background .3s;
+  }
+  .reset-btn:hover { background: rgba(190,45,45,.35); }
+
+  .config-panel {
+    position: fixed;
+    bottom: 74px; right: 18px;
+    width: 320px;
+    background: rgba(14,20,30,.96);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 16px;
+    padding: 20px;
+    z-index: 300;
+    transform: translateY(12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform .25s, opacity .25s;
+  }
+  .config-panel.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .config-title {
+    font-weight: 900;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,.7);
+    margin-bottom: 14px;
+  }
+  .config-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .config-field label {
+    font-weight: 700;
+    font-size: 12px;
+    color: rgba(255,255,255,.6);
+    flex: 1;
+  }
+  .config-field input[type="number"] {
+    width: 84px;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 8px;
+    color: #fff;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 7px 10px;
+    text-align: right;
+  }
+  .config-field input[type="checkbox"] { width: 18px; height: 18px; accent-color: #ff6b4a; }
+  .config-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .config-actions button {
+    flex: 1;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-weight: 900;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 11px 0;
+    cursor: pointer;
+  }
+  .btn-apply { background: linear-gradient(90deg, #ffb347, #ff6b4a); color: #1a1208; }
+  .btn-reset { background: rgba(190,45,45,.25); border: 1px solid rgba(190,45,45,.6) !important; color: #ff9c9c; }
+  .config-note {
+    margin-top: 12px;
+    font-size: 10px;
+    line-height: 1.5;
+    color: rgba(255,255,255,.35);
+  }
+</style>
+</head>
+<body>
+
+<div class="grand-flash" id="grandFlash"></div>
+
+<div class="board">
+  <div class="qr-column">
+    <div class="qr-label">Scan to Rip a Pack</div>
+    <div class="qr-badge" id="qrBadge"></div>
+    <div class="scans-label">Scans</div>
+    <div class="scans-num" id="scansNum">0</div>
+    <div class="mode-pill" id="modePill">connecting…</div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-kicker">Exclusive Digital Collectables</div>
+    <div class="hero-title">Prize<br>Packs</div>
+    <div class="fan" id="fan"></div>
+    <div class="drop-ticker">
+      <div class="drop-ticker-label">Prizes Claimed</div>
+      <div class="drop-ticker-num" id="tickerNum">0 / 0</div>
+      <div class="drop-bar"><div class="drop-bar-fill" id="dropBarFill"></div></div>
+    </div>
+    <div class="drop-control" id="dropControl">
+      <button class="start-btn" id="startBtn">▶&nbsp; Start Drop</button>
+    </div>
+  </div>
+
+  <div class="prizes" id="prizes"></div>
+</div>
+
+<button class="reset-btn" id="resetBtn" title="Reset the game">↺ Reset</button>
+<button class="gear-btn" id="gearBtn" title="Game settings">⚙</button>
+<div class="config-panel" id="configPanel">
+  <div class="config-title">Game Settings</div>
+  <div class="config-field"><label>25% Off — total</label><input type="number" id="cfgOff25" min="0" step="1"></div>
+  <div class="config-field"><label>75% Off — total</label><input type="number" id="cfgOff75" min="0" step="1"></div>
+  <div class="config-field"><label>Drop length — seconds</label><input type="number" id="cfgDrain" min="10" step="5"></div>
+  <div class="config-field"><label>Packs per scan</label><input type="number" id="cfgCap" min="1" step="1"></div>
+  <div class="config-field"><label>Demo drain enabled</label><input type="checkbox" id="cfgDemo"></div>
+  <div class="config-actions">
+    <button class="btn-apply" id="cfgApply">Apply</button>
+    <button class="btn-reset" id="cfgReset">Reset Game</button>
+  </div>
+  <div class="config-note">Temporary controls — a full dashboard replaces this later. Totals can't go below already-claimed counts. Reset clears all claims and re-hides the big prize.</div>
+</div>
+
+<script src="cards-sync.js"></script>
+<script src="cards-deck.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+  new QRCode(document.getElementById('qrBadge'), {
+    text: new URL('card-player.html', location.href).href,
+    width: 200, height: 200,
+    colorDark: '#000', colorLight: '#fff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+</script>
+<script>
+(function () {
+  const S = CardsSync;
+  const prizesEl = document.getElementById('prizes');
+  const tickerNum = document.getElementById('tickerNum');
+  const dropBarFill = document.getElementById('dropBarFill');
+  const grandFlash = document.getElementById('grandFlash');
+  const modePill = document.getElementById('modePill');
+
+  // ── Hero card fan ────────────────────────────────────
+  (function buildFan() {
+    const fan = document.getElementById('fan');
+    const picks = [
+      { rarity: 'silver' }, { rarity: 'base' }, { rarity: 'prism' }, { rarity: 'gold' }, { rarity: 'base' },
+    ];
+    const angles = [-24, -12, 0, 12, 24];
+    picks.forEach((p, i) => {
+      const card = CardsDeck.randomPlayerCard();
+      card.rarity = p.rarity;
+      const el = CardsDeck.renderCard(card);
+      el.style.transform = 'translate(-50%, -58%) rotate(' + angles[i] + 'deg)';
+      el.style.zIndex = i === 2 ? 10 : 10 - Math.abs(i - 2);
+      el.style.animationDelay = (i * 0.35) + 's';
+      fan.appendChild(el);
+    });
+  })();
+
+  // ── Fake scans counter (demo flavor) ─────────────────
+  const scansEl = document.getElementById('scansNum');
+  let scansCurrent = 0;
+  const SCANS_MAX = 4217;
+  (function stepScans() {
+    if (scansCurrent >= SCANS_MAX) return;
+    const remaining = SCANS_MAX - scansCurrent;
+    const jump = Math.max(2, Math.round(remaining * (0.03 + Math.random() * 0.08)));
+    scansCurrent = Math.min(scansCurrent + jump, SCANS_MAX);
+    scansEl.textContent = scansCurrent.toLocaleString();
+    if (scansCurrent < SCANS_MAX) setTimeout(stepScans, 1000 + Math.random() * 2000);
+  })();
+
+  // ── Build prize rows ─────────────────────────────────
+  function buildRow(p, isGrand) {
+    const row = document.createElement('div');
+    row.className = 'prize-row' + (isGrand ? ' grand' : '');
+    row.id = 'row-' + p.id;
+    row.innerHTML =
+      '<div class="prize-flash" id="flash-' + p.id + '"></div>' +
+      '<div class="prize-icon">' + p.icon + '</div>' +
+      '<div class="prize-info">' +
+        '<div class="prize-label">' + p.label + '</div>' +
+        '<div class="prize-bar-wrap"><div class="prize-bar-fill" id="bar-' + p.id + '"></div></div>' +
+        '<div class="prize-remaining" id="rem-' + p.id + '"></div>' +
+      '</div>' +
+      '<div class="prize-count">' +
+        '<span class="num" id="count-' + p.id + '">0</span>' +
+        '<span class="of-total" id="total-' + p.id + '">/ 0</span>' +
+      '</div>';
+    prizesEl.appendChild(row);
+    return row;
+  }
+  S.BASE_PRIZES.forEach(p => buildRow(p, false));
+  const grandRow = buildRow(S.GRAND, true);
+
+  let grandShown = false;
+
+  function updateUI() {
+    S.ALL_PRIZES.forEach(p => {
+      const total = S.prizeTotal(p.id);
+      const claimed = Math.min(S.prizeClaimed(p.id), total);
+      const pct = total > 0 ? Math.min(100, (claimed / total) * 100) : 0;
+      document.getElementById('count-' + p.id).textContent = claimed;
+      document.getElementById('total-' + p.id).textContent = '/ ' + total;
+      document.getElementById('bar-' + p.id).style.width = pct + '%';
+      const rem = total - claimed;
+      document.getElementById('rem-' + p.id).textContent = rem > 0 ? rem + ' remaining' : 'None remaining';
+      const rowEl = document.getElementById('row-' + p.id);
+      if (rem <= 0 && p.id !== S.GRAND.id) rowEl.classList.add('sold-out');
+      else rowEl.classList.remove('sold-out');
+    });
+
+    const baseTotal = S.baseTotal();
+    const baseClaimed = S.baseClaimed();
+    tickerNum.textContent = baseClaimed + ' / ' + baseTotal;
+    const remPct = baseTotal > 0 ? Math.max(0, 1 - baseClaimed / baseTotal) : 1;
+    dropBarFill.style.width = (remPct * 100) + '%';
+    tickerNum.classList.toggle('hot', remPct <= 0.35 && remPct > 0);
+
+    if (S.state.grandRevealed && !grandShown) revealGrandRow();
+    if (!S.state.grandRevealed && grandShown) hideGrandRow();
+  }
+
+  function animateIncrement(prizeId) {
+    const countEl = document.getElementById('count-' + prizeId);
+    if (!countEl) return;
+    countEl.classList.remove('pop');
+    void countEl.offsetWidth;
+    countEl.classList.add('pop');
+    const flash = document.getElementById('flash-' + prizeId);
+    if (flash) {
+      flash.classList.add('active');
+      setTimeout(() => flash.classList.remove('active'), 400);
+    }
+  }
+
+  function revealGrandRow() {
+    grandShown = true;
+    grandFlash.classList.add('active');
+    setTimeout(() => grandFlash.classList.remove('active'), 600);
+    setTimeout(() => {
+      grandRow.classList.add('revealed');
+      const goldColors = ['#ffd700', '#ffaa00', '#fff', '#ff6600', '#8ec5ff'];
+      function grandBurst() {
+        confetti({ particleCount: 150, spread: 120, origin: { x: Math.random() * 0.6 + 0.2, y: Math.random() * 0.4 + 0.2 }, colors: goldColors });
+      }
+      grandBurst();
+      const iv = setInterval(grandBurst, 500);
+      setTimeout(() => clearInterval(iv), 6000);
+    }, 400);
+  }
+
+  function hideGrandRow() {
+    // After a Reset Game — re-hide the row without animation.
+    grandShown = false;
+    grandRow.classList.remove('revealed');
+  }
+
+  // ── Sync wiring ──────────────────────────────────────
+  S.ready.then(() => {
+    modePill.textContent = S.mode === 'firebase' ? 'live sync' : 'local mode';
+    modePill.classList.toggle('local', S.mode !== 'firebase');
+    // If the grand prize was already revealed (board refresh mid-game),
+    // show the row without replaying the flash + confetti moment.
+    if (S.state.grandRevealed) {
+      grandShown = true;
+      grandRow.classList.add('revealed');
+    }
+    updateUI();
+    fillConfigInputs();
+    startDemoDrain();
+  });
+
+  S.onChange(() => {
+    updateUI();
+    S.maybeRevealGrand();
+  });
+
+  S.onClaim((evt) => {
+    animateIncrement(evt.prize);
+    if (evt.prize === 'off75') {
+      confetti({
+        particleCount: 100, spread: 90,
+        origin: { x: 0.5, y: 0.5 },
+        colors: ['#ff6b4a', '#ffb347', '#fff', '#8ec5ff'],
+      });
+    }
+    if (evt.prize === 'car') {
+      confetti({
+        particleCount: 220, spread: 140,
+        origin: { x: 0.5, y: 0.45 },
+        colors: ['#ffd700', '#ffaa00', '#fff', '#ff6600'],
+      });
+    }
+  });
+
+  // ── Drop countdown ───────────────────────────────────
+  const dropControl = document.getElementById('dropControl');
+  const startBtn = document.getElementById('startBtn');
+
+  startBtn.addEventListener('click', () => {
+    S.startDrop(Number(S.config.drainSecs) || 60);
+  });
+
+  function fmtTime(ms) {
+    const s = Math.max(0, Math.ceil(ms / 1000));
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  let lastDropUiState = '';
+  setInterval(() => {
+    const endsAt = Number(S.state.endsAt) || 0;
+    let uiState, html;
+    if (endsAt === 0) {
+      uiState = 'idle';
+      html = '<button class="start-btn" id="startBtnDyn">▶&nbsp; Start Drop</button>';
+    } else if (Date.now() < endsAt) {
+      uiState = 'active';
+      html = '<div class="countdown-label">Drop Ends In</div><div class="countdown" id="countdownNum"></div>';
+    } else {
+      uiState = 'ended';
+      html = '<div class="drop-ended-tag">Drop Ended</div><button class="start-btn" id="startBtnDyn" style="animation:none">▶&nbsp; Start New Drop</button>';
+    }
+    if (uiState !== lastDropUiState) {
+      lastDropUiState = uiState;
+      dropControl.innerHTML = html;
+      const btn = document.getElementById('startBtnDyn');
+      if (btn) btn.addEventListener('click', () => S.startDrop(Number(S.config.drainSecs) || 60));
+    }
+    if (uiState === 'active') {
+      const cd = document.getElementById('countdownNum');
+      const left = endsAt - Date.now();
+      cd.textContent = fmtTime(left);
+      cd.classList.toggle('hot', left <= 10000);
+    }
+  }, 250);
+
+  // ── Demo drain (writes through real inventory so all screens agree) ──
+  let drainTimer = null;
+  let grandDemoScheduled = false;
+
+  function startDemoDrain() {
+    if (drainTimer) clearTimeout(drainTimer);
+    grandDemoScheduled = false;
+    scheduleDrainTick();
+  }
+
+  function scheduleDrainTick() {
+    const drainSecs = Math.max(10, Number(S.config.drainSecs) || 60);
+    const totalStock = S.baseTotal();
+    const avgMs = totalStock > 0 ? (drainSecs * 1000) / totalStock : 1000;
+    const next = avgMs * (0.5 + Math.random());
+    drainTimer = setTimeout(drainTick, next);
+  }
+
+  function drainTick() {
+    // Only drain while a drop is actually running.
+    if (!S.config.demoDrain || !S.dropActive()) { drainTimer = setTimeout(drainTick, 1500); return; }
+
+    const candidates = S.BASE_PRIZES.filter(p => S.prizeRemaining(p.id) > 0);
+    if (candidates.length > 0) {
+      const totalW = candidates.reduce((s, p) => s + p.weight, 0);
+      let r = Math.random() * totalW;
+      let pick = candidates[0];
+      for (const p of candidates) { r -= p.weight; if (r <= 0) { pick = p; break; } }
+      S.claim(pick.id, 'DEMO');
+    }
+
+    // In demo mode, the car gets "won" a few seconds after its reveal.
+    if (S.state.grandRevealed && !grandDemoScheduled && S.prizeRemaining(S.GRAND.id) > 0) {
+      grandDemoScheduled = true;
+      setTimeout(() => {
+        if (S.config.demoDrain && S.prizeRemaining(S.GRAND.id) > 0) S.claim(S.GRAND.id, 'DEMO');
+      }, 3000 + Math.random() * 4000);
+    }
+
+    scheduleDrainTick();
+  }
+
+  // ── Config menu ──────────────────────────────────────
+  const gearBtn = document.getElementById('gearBtn');
+  const configPanel = document.getElementById('configPanel');
+  gearBtn.addEventListener('click', () => configPanel.classList.toggle('open'));
+
+  function fillConfigInputs() {
+    document.getElementById('cfgOff25').value = S.prizeTotal('off25');
+    document.getElementById('cfgOff75').value = S.prizeTotal('off75');
+    document.getElementById('cfgDrain').value = Number(S.config.drainSecs) || 60;
+    document.getElementById('cfgCap').value = Number(S.config.packCap) || 3;
+    document.getElementById('cfgDemo').checked = !!S.config.demoDrain;
+  }
+
+  document.getElementById('cfgApply').addEventListener('click', () => {
+    function readInt(id, min, fallback) {
+      const v = parseInt(document.getElementById(id).value, 10);
+      return Number.isFinite(v) ? Math.max(min, v) : fallback;
+    }
+    // Totals can't drop below what's already been claimed.
+    const off25 = Math.max(readInt('cfgOff25', 0, S.prizeTotal('off25')), S.prizeClaimed('off25'));
+    const off75 = Math.max(readInt('cfgOff75', 0, S.prizeTotal('off75')), S.prizeClaimed('off75'));
+    S.setConfig({
+      totals: { off25: off25, off75: off75, car: 1 },
+      drainSecs: readInt('cfgDrain', 10, 60),
+      packCap: readInt('cfgCap', 1, 3),
+      demoDrain: document.getElementById('cfgDemo').checked,
+    });
+    setTimeout(fillConfigInputs, 300);
+    configPanel.classList.remove('open');
+    startDemoDrain();
+  });
+
+  function doReset() {
+    if (!confirm('Reset the game? All claims are cleared, the countdown stops, and the big prize is re-hidden.')) return;
+    S.resetGame();
+    startDemoDrain();
+    configPanel.classList.remove('open');
+  }
+  document.getElementById('cfgReset').addEventListener('click', doReset);
+  document.getElementById('resetBtn').addEventListener('click', doReset);
+})();
+</script>
+</body>
+</html>

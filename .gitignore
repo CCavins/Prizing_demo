@@ -3,4 +3,10 @@ dist
 .DS_Store
 .netlify
 *.local
+.env
+.env.*
+!.env.example
 assets-src/
+*.tsbuildinfo
+.vscode/
+.idea/

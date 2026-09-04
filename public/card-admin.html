@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vixi Prize Packs — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Lato', system-ui, -apple-system, sans-serif;
+    background: radial-gradient(120% 90% at 50% 0%, #223047 0%, #16202f 55%, #0d141f 100%);
+    background-attachment: fixed;
+    color: #fff;
+    min-height: 100vh;
+    padding: clamp(20px, 4vh, 48px) clamp(16px, 3vw, 40px) 120px;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(60deg, rgba(255,255,255,.018) 25%, transparent 25.5%),
+      linear-gradient(-60deg, rgba(255,255,255,.018) 25%, transparent 25.5%),
+      linear-gradient(60deg, transparent 74.5%, rgba(0,0,0,.12) 75%),
+      linear-gradient(-60deg, transparent 74.5%, rgba(0,0,0,.12) 75%);
+    background-size: 140px 242px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 1060px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ─────────────────────────────────────── */
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: clamp(20px, 3vh, 32px);
+  }
+  .head-logo {
+    font-weight: 900;
+    font-style: italic;
+    font-size: clamp(28px, 4vw, 44px);
+    text-transform: uppercase;
+    letter-spacing: .02em;
+    line-height: 1;
+    background: linear-gradient(170deg, #ffffff 6%, #cfd8e6 30%, #8fa0b6 47%, #f2f6fc 54%, #6e7f96 80%, #dbe4f0);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 3px 3px rgba(0,0,0,.5));
+  }
+  .head-sub {
+    font-weight: 900;
+    font-size: clamp(14px, 1.6vw, 18px);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: #ffb347;
+  }
+  .demo-chip {
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.5);
+    border: 1px dashed rgba(255,255,255,.3);
+    border-radius: 99px;
+    padding: 4px 12px;
+  }
+  .head-spacer { flex: 1; }
+  .back-link {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.55);
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 99px;
+    padding: 8px 16px;
+    transition: color .2s, border-color .2s;
+  }
+  .back-link:hover { color: #fff; border-color: rgba(255,255,255,.4); }
+
+  /* ── Panels ─────────────────────────────────────── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(14px, 2vw, 24px);
+  }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .panel {
+    background: rgba(255,255,255,.055);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 20px;
+    padding: clamp(18px, 2.4vw, 28px);
+  }
+  .panel.full { grid-column: 1 / -1; }
+  .panel-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 900;
+    font-size: clamp(15px, 1.6vw, 18px);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .panel-title .dot {
+    width: 8px; height: 8px;
+    border-radius: 99px;
+    background: linear-gradient(135deg, #ffb347, #ff6b4a);
+    box-shadow: 0 0 10px rgba(255,140,60,.6);
+  }
+  .panel-hint {
+    font-size: 12px;
+    color: rgba(255,255,255,.45);
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+
+  /* ── Prize rows ─────────────────────────────────── */
+  .prize-slot {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(0,0,0,.22);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 14px;
+    padding: 12px 14px;
+  }
+  .prize-slot + .prize-slot { margin-top: 12px; }
+  .prize-slot.off { opacity: .45; }
+  .prize-thumb {
+    width: 52px; height: 52px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(0,0,0,.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.4);
+  }
+  .prize-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .prize-fields { flex: 1; min-width: 0; }
+  .prize-fields input[type="text"] {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,.15);
+    color: #fff;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 4px 0 6px;
+    outline: none;
+  }
+  .prize-fields input[type="text"]:focus { border-bottom-color: #ffb347; }
+  .prize-fields .sub {
+    margin-top: 5px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,.4);
+  }
+  .slot-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+    border: 1px dashed rgba(255,255,255,.22);
+    border-radius: 14px;
+    padding: 16px;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.45);
+    cursor: pointer;
+    transition: color .2s, border-color .2s;
+    user-select: none;
+  }
+  .slot-add:hover { color: #ffb347; border-color: rgba(255,179,71,.5); }
+
+  /* grand prize slot */
+  .prize-slot.grand {
+    position: relative;
+    background: linear-gradient(135deg, rgba(255,215,0,.1), rgba(255,120,0,.06));
+    border: 1px solid rgba(255,200,60,.4);
+  }
+  .grand-tag {
+    position: absolute;
+    top: -9px; left: 14px;
+    font-weight: 900;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #1a1408;
+    background: linear-gradient(90deg, #ffd700, #ffaa00);
+    border-radius: 99px;
+    padding: 3px 10px;
+  }
+
+  /* ── Steppers ───────────────────────────────────── */
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-shrink: 0;
+    background: rgba(0,0,0,.35);
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .stepper button {
+    width: 34px; height: 38px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,.6);
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .stepper button:hover { background: rgba(255,255,255,.08); color: #ffb347; }
+  .stepper .val {
+    min-width: 52px;
+    text-align: center;
+    font-weight: 900;
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stepper .val small {
+    display: block;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.35);
+  }
+
+  /* ── Toggles ────────────────────────────────────── */
+  .toggle {
+    position: relative;
+    width: 52px; height: 28px;
+    border-radius: 99px;
+    background: rgba(0,0,0,.45);
+    border: 1px solid rgba(255,255,255,.18);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .2s, border-color .2s;
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 22px; height: 22px;
+    border-radius: 99px;
+    background: rgba(255,255,255,.55);
+    transition: transform .2s cubic-bezier(.2,.8,.3,1.2), background .2s;
+  }
+  .toggle.on {
+    background: linear-gradient(90deg, rgba(255,179,71,.5), rgba(255,107,74,.5));
+    border-color: rgba(255,179,71,.7);
+  }
+  .toggle.on::after { transform: translateX(24px); background: #fff; }
+
+  /* ── Setting rows ───────────────────────────────── */
+  .setting {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 2px;
+  }
+  .setting + .setting { border-top: 1px solid rgba(255,255,255,.08); }
+  .setting-info { flex: 1; min-width: 0; }
+  .setting-name { font-weight: 900; font-size: 14px; }
+  .setting-desc {
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: rgba(255,255,255,.45);
+    line-height: 1.45;
+  }
+  .seg {
+    display: flex;
+    background: rgba(0,0,0,.35);
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .seg button {
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,.55);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: .5px;
+    padding: 9px 14px;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    white-space: nowrap;
+  }
+  .seg button.on {
+    background: linear-gradient(135deg, rgba(255,179,71,.85), rgba(255,107,74,.85));
+    color: #1a1408;
+    font-weight: 900;
+  }
+
+  /* ── Redemption panel ───────────────────────────── */
+  .redeem-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .redeem-bar input {
+    flex: 1;
+    background: rgba(0,0,0,.35);
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'SF Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    outline: none;
+  }
+  .redeem-bar input:focus { border-color: #ffb347; }
+  .redeem-bar input::placeholder { color: rgba(255,255,255,.25); letter-spacing: 2px; }
+  .btn {
+    border: none;
+    border-radius: 12px;
+    font-family: inherit;
+    font-weight: 900;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 12px 22px;
+    cursor: pointer;
+    transition: transform .12s, filter .2s;
+  }
+  .btn:active { transform: scale(.96); }
+  .btn.primary {
+    background: linear-gradient(135deg, #ffb347, #ff6b4a);
+    color: #1a1408;
+    box-shadow: 0 6px 18px rgba(255,120,60,.3);
+  }
+  .btn.primary:hover { filter: brightness(1.1); }
+  .btn.ghost {
+    background: rgba(255,255,255,.08);
+    color: rgba(255,255,255,.75);
+    border: 1px solid rgba(255,255,255,.16);
+  }
+  .btn.ghost:hover { background: rgba(255,255,255,.14); }
+  .btn.danger {
+    background: rgba(190,45,45,.2);
+    color: #ff9c9c;
+    border: 1px solid rgba(190,45,45,.5);
+  }
+  .btn.danger:hover { background: rgba(190,45,45,.35); }
+
+  .redeem-result {
+    display: none;
+    align-items: center;
+    gap: 14px;
+    background: rgba(0,0,0,.25);
+    border: 1px solid rgba(120,220,140,.4);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+  .redeem-result.show { display: flex; }
+  .redeem-result.redeemed { border-color: rgba(255,255,255,.15); opacity: .7; }
+  .rr-info { flex: 1; min-width: 0; }
+  .rr-prize { font-weight: 900; font-size: 15px; }
+  .rr-meta {
+    margin-top: 3px;
+    font-size: 11px;
+    color: rgba(255,255,255,.45);
+    font-family: ui-monospace, monospace;
+  }
+  .rr-status {
+    font-weight: 900;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-radius: 99px;
+    padding: 5px 12px;
+    flex-shrink: 0;
+  }
+  .rr-status.valid { color: #7ee08a; background: rgba(120,220,140,.14); border: 1px solid rgba(120,220,140,.4); }
+  .rr-status.done { color: rgba(255,255,255,.55); background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); }
+
+  .redeem-log-title {
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.4);
+    margin-bottom: 8px;
+  }
+  .redeem-log { list-style: none; }
+  .redeem-log li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: rgba(255,255,255,.65);
+    padding: 8px 2px;
+    border-top: 1px solid rgba(255,255,255,.07);
+  }
+  .redeem-log .code { font-family: ui-monospace, monospace; color: rgba(255,255,255,.4); }
+  .redeem-log .when { margin-left: auto; font-size: 10px; color: rgba(255,255,255,.35); white-space: nowrap; }
+
+  /* ── Footer save bar ────────────────────────────── */
+  .savebar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 14px 20px;
+    background: rgba(10,15,24,.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(255,255,255,.1);
+  }
+  .savebar .note {
+    font-size: 11px;
+    color: rgba(255,255,255,.4);
+    letter-spacing: .5px;
+  }
+
+  /* ── Toast ──────────────────────────────────────── */
+  .toast {
+    position: fixed;
+    left: 50%; bottom: 90px;
+    transform: translate(-50%, 20px);
+    z-index: 100;
+    background: rgba(20,28,42,.95);
+    border: 1px solid rgba(255,179,71,.5);
+    border-radius: 12px;
+    color: #ffd9a0;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 12px 22px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="head">
+    <div class="head-logo">Prize Packs</div>
+    <div class="head-sub">Admin</div>
+    <div class="demo-chip">Mockup · Not Wired</div>
+    <div class="head-spacer"></div>
+    <a class="back-link" href="card-output2.html">← Back to Board</a>
+  </div>
+
+  <div class="grid">
+
+    <!-- 1 + 2: prize types & quantities -->
+    <div class="panel">
+      <div class="panel-title"><span class="dot"></span>Prize Giveaway</div>
+      <div class="panel-hint">Up to 3 prize types per drop. Quantity is the total available for the whole event.</div>
+
+      <div class="prize-slot">
+        <div class="prize-thumb"><img src="images/prizes/off25.png" alt=""></div>
+        <div class="prize-fields">
+          <input type="text" value="25% Off Any Merch Item">
+          <div class="sub">Prize Type 1</div>
+        </div>
+        <div class="stepper" data-step="10" data-min="0" data-max="999">
+          <button type="button" data-dir="-1">−</button>
+          <div class="val"><span>200</span><small>qty</small></div>
+          <button type="button" data-dir="1">+</button>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+
+      <div class="prize-slot">
+        <div class="prize-thumb"><img src="images/prizes/off75.png" alt=""></div>
+        <div class="prize-fields">
+          <input type="text" value="75% Off Any Merch Item">
+          <div class="sub">Prize Type 2</div>
+        </div>
+        <div class="stepper" data-step="5" data-min="0" data-max="999">
+          <button type="button" data-dir="-1">−</button>
+          <div class="val"><span>20</span><small>qty</small></div>
+          <button type="button" data-dir="1">+</button>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+
+      <div class="slot-add" id="slotAdd">+ Add Prize Type <span style="opacity:.5">(1 slot left)</span></div>
+
+      <div style="height:18px"></div>
+
+      <div class="prize-slot grand">
+        <div class="grand-tag">Grand Prize</div>
+        <div class="prize-thumb"><img src="images/prizes/car.png" alt=""></div>
+        <div class="prize-fields">
+          <input type="text" value="A Brand New Car">
+          <div class="sub">Revealed mid-drop</div>
+        </div>
+        <div class="stepper" data-step="1" data-min="0" data-max="5">
+          <button type="button" data-dir="-1">−</button>
+          <div class="val"><span>1</span><small>qty</small></div>
+          <button type="button" data-dir="1">+</button>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+    </div>
+
+    <!-- 3 + 4 + extras: game rules -->
+    <div class="panel">
+      <div class="panel-title"><span class="dot"></span>Game Rules</div>
+      <div class="panel-hint">How each player session behaves after they scan the QR code.</div>
+
+      <div class="setting">
+        <div class="setting-info">
+          <div class="setting-name">Packs per scan</div>
+          <div class="setting-desc">How many chances each player gets per session (1 pack + retries).</div>
+        </div>
+        <div class="stepper" data-step="1" data-min="1" data-max="5">
+          <button type="button" data-dir="-1">−</button>
+          <div class="val"><span>3</span><small>packs</small></div>
+          <button type="button" data-dir="1">+</button>
+        </div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-info">
+          <div class="setting-name">Round length</div>
+          <div class="setting-desc">The on-screen countdown. The drop ends when the timer hits zero.</div>
+        </div>
+        <div class="stepper" data-step="15" data-min="15" data-max="600">
+          <button type="button" data-dir="-1">−</button>
+          <div class="val"><span>60</span><small>secs</small></div>
+          <button type="button" data-dir="1">+</button>
+        </div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-info">
+          <div class="setting-name">Grand prize reveal</div>
+          <div class="setting-desc">When the hidden grand prize row appears on the board.</div>
+        </div>
+        <div class="seg" id="grandSeg">
+          <button type="button" class="on">15s in</button>
+          <button type="button">75% claimed</button>
+          <button type="button">Manual</button>
+        </div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-info">
+          <div class="setting-name">Collection feature</div>
+          <div class="setting-desc">Players can sign in and save their cards to a personal collection.</div>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-info">
+          <div class="setting-name">Demo auto-drain</div>
+          <div class="setting-desc">Simulates a crowd claiming prizes so the board feels alive in demos.</div>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-info">
+          <div class="setting-name">Reset game</div>
+          <div class="setting-desc">Clears all claims and re-hides the grand prize. Boards restart their intro.</div>
+        </div>
+        <button class="btn danger" id="btnReset">Reset</button>
+      </div>
+    </div>
+
+    <!-- 6: redemption assistance -->
+    <div class="panel full">
+      <div class="panel-title"><span class="dot"></span>Redemption Assistance</div>
+      <div class="panel-hint">Staff tool for the merch stand: enter the code from a winner's prize card to verify it's real and mark it redeemed, so a code can't be used twice.</div>
+
+      <div class="redeem-bar">
+        <input type="text" id="redeemInput" placeholder="PRIZE CODE · e.g. VX-7K2F9Q" maxlength="12">
+        <button class="btn primary" id="btnVerify">Verify</button>
+      </div>
+
+      <div class="redeem-result" id="redeemResult">
+        <div class="prize-thumb"><img src="images/prizes/off75.png" alt=""></div>
+        <div class="rr-info">
+          <div class="rr-prize">75% Off Any Merch Item</div>
+          <div class="rr-meta" id="rrMeta">VX-7K2F9Q · won 2 min ago · this device hasn't redeemed before</div>
+        </div>
+        <div class="rr-status valid" id="rrStatus">Valid</div>
+        <button class="btn ghost" id="btnRedeem">Mark Redeemed</button>
+      </div>
+
+      <div class="redeem-log-title">Recent redemptions</div>
+      <ul class="redeem-log">
+        <li>🔥 75% Off Any Merch Item <span class="code">VX-3TQ8MZ</span> <span class="when">1 min ago</span></li>
+        <li>🏷️ 25% Off Any Merch Item <span class="code">VX-9WL2KD</span> <span class="when">4 min ago</span></li>
+        <li>🏷️ 25% Off Any Merch Item <span class="code">VX-5RB7XN</span> <span class="when">6 min ago</span></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<div class="savebar">
+  <span class="note">Mockup only — settings don't persist yet.</span>
+  <button class="btn ghost" id="btnCancel">Cancel</button>
+  <button class="btn primary" id="btnSave">Save Changes</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  // Visual-only interactions. Nothing here talks to the game — this page
+  // is a design mock for the future admin experience.
+
+  const toast = document.getElementById('toast');
+  let toastTimer = null;
+  function say(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  // steppers
+  document.querySelectorAll('.stepper').forEach(st => {
+    const valEl = st.querySelector('.val span');
+    const step = Number(st.dataset.step) || 1;
+    const min = Number(st.dataset.min) || 0;
+    const max = Number(st.dataset.max) || 999;
+    st.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => {
+        const cur = Number(valEl.textContent) || 0;
+        valEl.textContent = Math.min(max, Math.max(min, cur + step * Number(b.dataset.dir)));
+      });
+    });
+  });
+
+  // toggles
+  document.querySelectorAll('.toggle').forEach(t => {
+    t.addEventListener('click', () => {
+      t.classList.toggle('on');
+      const slot = t.closest('.prize-slot');
+      if (slot) slot.classList.toggle('off', !t.classList.contains('on'));
+    });
+  });
+
+  // segmented control
+  document.getElementById('grandSeg').querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => {
+      b.parentElement.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+    });
+  });
+
+  // add prize slot
+  document.getElementById('slotAdd').addEventListener('click', () => say('Mock only — 3rd prize slot coming with the real admin.'));
+
+  // redemption mock
+  const redeemInput = document.getElementById('redeemInput');
+  const redeemResult = document.getElementById('redeemResult');
+  const rrMeta = document.getElementById('rrMeta');
+  const rrStatus = document.getElementById('rrStatus');
+  const btnRedeem = document.getElementById('btnRedeem');
+
+  document.getElementById('btnVerify').addEventListener('click', () => {
+    const code = (redeemInput.value.trim() || 'VX-7K2F9Q').toUpperCase();
+    rrMeta.textContent = code + ' · won 2 min ago · not redeemed yet';
+    rrStatus.textContent = 'Valid';
+    rrStatus.className = 'rr-status valid';
+    btnRedeem.style.display = '';
+    redeemResult.classList.remove('redeemed');
+    redeemResult.classList.add('show');
+  });
+  redeemInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('btnVerify').click();
+  });
+  btnRedeem.addEventListener('click', () => {
+    rrStatus.textContent = 'Redeemed';
+    rrStatus.className = 'rr-status done';
+    btnRedeem.style.display = 'none';
+    redeemResult.classList.add('redeemed');
+    say('Marked redeemed (mock).');
+  });
+
+  // save / cancel / reset
+  document.getElementById('btnSave').addEventListener('click', () => say('Mock only — nothing was saved.'));
+  document.getElementById('btnCancel').addEventListener('click', () => say('No changes to discard (mock).'));
+  document.getElementById('btnReset').addEventListener('click', () => say('Mock only — game not reset.'));
+})();
+</script>
+</body>
+</html>

@@ -123,7 +123,7 @@
   .pack-spin {
     position: relative;
     --packw: min(64vw, 260px, calc((100dvh - 13rem) * 5 / 7.6));
-    --tear-lid: polygon(0% 0%,100% 0%,100% 82%,0% 78%);
+    --tear-lid: polygon(0% 0%,100% 0%,100% 10.2%,0% 9.6%);
     --tear-body: polygon(0% 9.6%,100% 10.2%,100% 100%,0% 100%);
     width: var(--packw);
     aspect-ratio: 5 / 7.6;
@@ -208,16 +208,16 @@
       linear-gradient(180deg, #070b10 0%, #141b26 100%);
   }
 
-  /* Top flap — same foil as the body, sits flush until the swipe */
+  /* Top flap — full-size clone of the printed face, clipped to the tear */
   .pack-lid {
     position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 12.4%;
+    inset: 0;
     z-index: 9;
-    transform-origin: 50% 100%;
-    transform-style: preserve-3d;
-    border-radius: 14px 14px 0 0;
+    transform-origin: 50% var(--tear-origin-y, 10%);
+    transform-style: flat;
+    border-radius: 14px;
     opacity: 0;
+    pointer-events: none;
   }
   .pack-spin.opening .pack-lid,
   .pack-spin.opened .pack-lid { opacity: 1; }
@@ -226,39 +226,11 @@
     position: absolute; inset: 0;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    border-radius: 14px 14px 0 0;
+    border-radius: 14px;
   }
   .lid-front {
     overflow: hidden;
-    background: linear-gradient(115deg, #b9c2cf 0%, #eef2f7 18%, #8f9aa9 34%, #dde4ec 50%, #98a3b3 66%, #f2f5f9 82%, #aab4c2 100%);
-    background-size: 100% 660%;
-    background-position: top;
-  }
-  .lid-crimp {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 32%;
-    border-radius: 14px 14px 0 0;
-    background:
-      repeating-linear-gradient(90deg, rgba(0,0,0,.14) 0 2px, transparent 2px 9px),
-      linear-gradient(180deg, rgba(255,255,255,.22), transparent 80%);
-  }
-  .lid-brand {
-    position: absolute;
-    left: 0; right: 0; top: 42%;
-    text-align: center;
-    font-weight: 900;
-    font-size: clamp(11px, 3.2vw, 14px);
-    letter-spacing: .5em;
-    text-indent: .5em;
-    color: rgba(20,30,45,.75);
-  }
-  .lid-sheen {
-    position: absolute; inset: 0;
-    pointer-events: none;
-    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.5) 50%, transparent 60%);
-    background-size: 250% 100%;
-    animation: foilSweep 3.2s ease-in-out infinite;
+    background: none;
   }
   .lid-back {
     transform: rotateX(180deg);
@@ -322,7 +294,16 @@
   .pack-spin.tearing .pack-lid { opacity: 1; }
   .pack-spin.tearing .pack-lid,
   .pack-spin.opening .pack-lid,
-  .pack-spin.opened .pack-lid {
+  .pack-spin.opened .pack-lid,
+  .pack-spin.tearing .lid-front,
+  .pack-spin.opening .lid-front,
+  .pack-spin.opened .lid-front,
+  .pack-spin.tearing .lid-print,
+  .pack-spin.opening .lid-print,
+  .pack-spin.opened .lid-print,
+  .pack-spin.tearing .lid-back,
+  .pack-spin.opening .lid-back,
+  .pack-spin.opened .lid-back {
     clip-path: var(--tear-lid);
   }
   /* Drop the shell so the torn-off top is empty stage, not a gray rounded cap.
@@ -351,9 +332,9 @@
     border-radius: 0;
     background: none;
   }
-  .pack-spin.tearing .pack-body,
-  .pack-spin.opening .pack-body,
-  .pack-spin.opened .pack-body {
+  .pack-spin.tearing .pack-inner .pack-body,
+  .pack-spin.opening .pack-inner .pack-body,
+  .pack-spin.opened .pack-inner .pack-body {
     clip-path: var(--tear-body);
     border-radius: 0 0 14px 14px;
     box-shadow: none;
@@ -367,9 +348,9 @@
     opacity: 0;
     visibility: hidden;
   }
-  .pack-spin.tearing .pd-crimp-top,
-  .pack-spin.opening .pd-crimp-top,
-  .pack-spin.opened .pd-crimp-top,
+  .pack-spin.tearing .pack-inner .pd-crimp-top,
+  .pack-spin.opening .pack-inner .pd-crimp-top,
+  .pack-spin.opened .pack-inner .pd-crimp-top,
   .pack-spin.tearing .pb-crimp-top,
   .pack-spin.opening .pb-crimp-top,
   .pack-spin.opened .pb-crimp-top { opacity: 0; }
@@ -595,7 +576,7 @@
 
   .pack-lid.flyoff {
     transition: transform 1.05s cubic-bezier(.16,.78,.2,1), opacity .4s .45s ease;
-    transform: translateY(-160%) rotate(-10deg) !important;
+    transform: translateY(-8%) rotateX(-46deg) !important;
     pointer-events: none;
   }
   .pack-spin.opening .pack-lid.flyoff,
@@ -710,7 +691,7 @@
   .stack-zone {
     position: relative;
     width: 100%;
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-height: 0;
     height: auto;
     overflow: visible;
@@ -718,7 +699,7 @@
   }
   .stack-card {
     position: absolute;
-    left: 50%; top: 50%;
+    left: 50%; top: 52%;
     --cardw: min(58vw, 240px, calc((100dvh - 16rem) * 5 / 7));
     width: var(--cardw);
     aspect-ratio: 5 / 7;
@@ -799,6 +780,12 @@
     margin-top: 8px;
     min-height: 0;
   }
+  #viewReveal .btn-reveal:not(.show),
+  #viewReveal .keep-note:not(.show) {
+    display: none;
+  }
+  #viewReveal .btn-reveal.show { display: block; }
+  #viewReveal .keep-note.show { display: block; }
   .btn {
     border: none;
     border-radius: 12px;
@@ -1103,10 +1090,20 @@
       <div class="trace-head" id="traceHead" aria-hidden="true"></div>
       <div class="tear-flash" id="tearFlash" aria-hidden="true"></div>
       <div class="pack-lid" id="packTop">
-        <div class="lid-front foil-mat">
-          <div class="lid-crimp"></div>
-          <div class="lid-brand">VIXI</div>
-          <div class="lid-sheen"></div>
+        <div class="lid-front">
+          <div class="pack-body lid-print">
+            <div class="pd-crimp-top"></div>
+            <div class="pd-facets"></div>
+            <div class="pd-frame"></div>
+            <div class="pd-frame-inner"></div>
+            <div class="pd-brand">VIXI</div>
+            <div class="pd-logo">PRIZE PACKS</div>
+            <div class="pd-art" id="lidArt"></div>
+            <div class="pd-badge"><b>3</b>CARDS</div>
+            <div class="pd-tag">Game Day Exclusive</div>
+            <div class="pd-crimp-bot"></div>
+            <div class="pd-sheen"></div>
+          </div>
           <div class="lid-rip" aria-hidden="true"></div>
         </div>
         <div class="lid-back"></div>
@@ -1336,7 +1333,10 @@
 
   function randomizePackArt() {
     const p = D.PLAYERS[Math.floor(Math.random() * D.PLAYERS.length)];
-    packArt.style.backgroundImage = "url('" + p.img + "')";
+    const url = "url('" + p.img + "')";
+    packArt.style.backgroundImage = url;
+    const lidArt = document.getElementById('lidArt');
+    if (lidArt) lidArt.style.backgroundImage = url;
   }
   randomizePackArt();
 

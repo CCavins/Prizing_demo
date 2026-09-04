@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
 <title>Vixi Prize Packs — Rip Your Pack</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -135,7 +135,9 @@
                packIdle 5s 1.9s ease-in-out infinite alternate;
   }
   .pack-spin.idle { animation: packIdle 5s ease-in-out infinite alternate; }
-  .pack-spin.tearing { animation: none; }
+  .pack-spin.tearing,
+  .pack-spin.opening,
+  .pack-spin.opened { animation: none !important; }
   @keyframes packSpin {
     0%   { transform: rotateY(0deg) scale(.6); opacity: 0; }
     25%  { opacity: 1; }
@@ -149,7 +151,7 @@
     position: absolute; inset: 0;
     transform-style: preserve-3d;
     z-index: 2;
-    background: #c5cdd8;
+    background: transparent;
   }
   .pack-face {
     position: absolute; inset: 0;
@@ -208,14 +210,16 @@
       linear-gradient(180deg, #070b10 0%, #141b26 100%);
   }
 
-  /* Top flap — full-size clone of the printed face, clipped to the tear */
+  /* Torn-off top is a real strip — never a full-pack gray square over the card */
   .pack-lid {
     position: absolute;
-    inset: 0;
-    z-index: 9;
-    transform-origin: 50% var(--tear-origin-y, 10%);
+    top: 0; left: 0; right: 0;
+    height: 13.2%;
+    z-index: 6;
+    transform-origin: 50% 100%;
     transform-style: flat;
-    border-radius: 14px;
+    overflow: hidden;
+    border-radius: 14px 14px 0 0;
     opacity: 0;
     pointer-events: none;
   }
@@ -225,7 +229,7 @@
     position: absolute; inset: 0;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    border-radius: 14px;
+    border-radius: 14px 14px 0 0;
   }
   .lid-front {
     overflow: hidden;
@@ -296,25 +300,19 @@
   }
   /* Split only after the highlight commits — never while pressing or tracing. */
   .pack-spin.opening .lid-front {
-    box-shadow: 0 14px 22px rgba(0,0,0,.32);
+    box-shadow: 0 10px 16px rgba(0,0,0,.28);
   }
   .pack-spin.opening .pack-lid,
-  .pack-spin.opened .pack-lid,
-  .pack-spin.opening .lid-front,
-  .pack-spin.opened .lid-front,
-  .pack-spin.opening .lid-back,
-  .pack-spin.opened .lid-back {
-    clip-path: var(--tear-lid);
+  .pack-spin.opened .pack-lid {
+    clip-path: polygon(0% 0%, 100% 0%, 100% 78%, 86% 100%, 72% 82%, 58% 100%, 50% 86%, 42% 100%, 28% 82%, 14% 100%, 0% 80%);
   }
-  /* Drop the shell so the torn-off top is empty stage, not a gray rounded cap.
-     Clip the printed body (no 3D transform — clip-path actually works).
-     Hide the back face; looking through the hole would otherwise show it. */
+  /* Clip the printed body only — not the transforming wrapper — so a rotate
+     cannot drop the clip and flash a gray rectangle over the card. */
   .pack-spin.opening .pack-inner,
   .pack-spin.opened .pack-inner {
     background: transparent;
     box-shadow: none;
     transform-style: flat;
-    clip-path: var(--tear-body);
     overflow: hidden;
     border-radius: 0 0 14px 14px;
   }
@@ -537,14 +535,14 @@
   .pack-spin.opening .pack-well {
     visibility: visible;
     overflow: visible;
-    z-index: 3;
+    z-index: 10;
     /* Only the open mouth and above — cards leave the torn-off top */
     clip-path: inset(-240% -40% 78% -40%);
   }
   .pack-spin.opened .pack-well {
     visibility: visible;
     overflow: visible;
-    z-index: 3;
+    z-index: 10;
     clip-path: none;
   }
   .pack-cards {
@@ -582,8 +580,8 @@
   }
 
   .pack-lid.flyoff {
-    transition: transform 1.05s cubic-bezier(.16,.78,.2,1), opacity .4s .45s ease;
-    transform: translateY(-8%) rotateX(-46deg) !important;
+    transition: transform 1.05s cubic-bezier(.16,.78,.2,1), opacity .16s .62s ease;
+    transform: translateY(-90%) rotateX(-46deg) !important;
     pointer-events: none;
   }
   .pack-spin.opening .pack-lid.flyoff,
@@ -865,6 +863,7 @@
     max-width: 420px;
     overflow-y: auto;
     touch-action: pan-y;
+    -ms-touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 20px;
   }
@@ -1134,7 +1133,7 @@
 <div class="view" id="viewReveal">
   <div class="stack-zone" id="stackZone"></div>
   <div class="stack-caption" id="stackCaption"></div>
-  <div class="swipe-next-cue" id="swipeNextCue"><span class="finger">👈</span>Swipe left for the next card</div>
+  <div class="swipe-next-cue" id="swipeNextCue"><span class="finger">👈</span>Swipe left or right for the next card</div>
   <div class="btn-row">
     <button class="btn btn-primary btn-reveal" id="btnSave">Save to Collection</button>
     <button class="btn btn-ghost btn-reveal" id="btnTryAgain">Or Try Another Pack</button>
@@ -1186,6 +1185,28 @@
   const L = PackLooks;
   const UID = S.getUid();
   L.boot();
+
+  // iOS still zooms on double-tap / pinch even with user-scalable=no.
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach((ev) => {
+    document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
+  });
+  document.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 1) e.preventDefault();
+  }, { passive: false });
+  let lastTapAt = 0;
+  let lastTapX = 0;
+  let lastTapY = 0;
+  document.addEventListener('touchend', (e) => {
+    if (e.touches.length) return;
+    const t = e.changedTouches && e.changedTouches[0];
+    if (!t) return;
+    const now = Date.now();
+    const nearby = Math.hypot(t.clientX - lastTapX, t.clientY - lastTapY) < 40;
+    if (now - lastTapAt < 320 && nearby) e.preventDefault();
+    lastTapAt = now;
+    lastTapX = t.clientX;
+    lastTapY = t.clientY;
+  }, { passive: false });
 
   // ── Local persistence ────────────────────────────────
   const LS = {
@@ -1393,6 +1414,7 @@
     tearActive = true;
     tearStartX = e.clientX;
     tearStartY = e.clientY;
+    packSpin.classList.remove('spinning');
     packSpin.classList.add('tearing');
     tearDir = 'left';
     clearTimeout(holdTimer);
@@ -1464,7 +1486,7 @@
     packTop.style.transform = '';
     packTop.style.transformOrigin = '';
     packInner.style.transform = '';
-    packSpin.classList.remove('tearing');
+    packSpin.classList.remove('tearing', 'spinning');
     packSpin.classList.add('opening');
     packTop.style.opacity = '1';
     requestAnimationFrame(() => {
@@ -1526,7 +1548,7 @@
     if (!front) return;
     swActive = true;
     swEl = front;
-    swStartX = e.clientX; swStartY = e.clientY; swDx = 0;
+    swStartX = e.clientX; swStartY = e.clientY; swDx = 0; swDy = 0;
     swLastX = e.clientX; swLastT = performance.now(); swVx = 0;
     front.style.transition = 'none';
     e.preventDefault();
@@ -1648,7 +1670,7 @@
     });
   }
 
-  function advance() {
+  function advance(flyOff) {
     if ((phase !== 'swiping' && phase !== 'holding') || currentIdx >= wrappers.length - 1) return;
     phase = 'advancing';
     stackCaption.innerHTML = '';
@@ -1657,7 +1679,7 @@
     const leaving = wrappers[currentIdx];
     leaving.style.zIndex = 30;
     leaving.style.transition = 'transform .28s cubic-bezier(.22,.02,.18,1)';
-    leaving.style.transform = T().offL;
+    leaving.style.transform = flyOff || T().offL;
 
     currentIdx++;
     markPeek();
@@ -1731,12 +1753,8 @@
   }
 
   // swipe handling on stack cards
-  let swActive = false, swEl = null, swDx = 0, swStartX = 0, swStartY = 0;
+  let swActive = false, swEl = null, swDx = 0, swDy = 0, swStartX = 0, swStartY = 0;
   let swLastX = 0, swLastT = 0, swVx = 0;
-
-  function dismissDir() {
-    return L.current().id === 'salon' ? 1 : -1;
-  }
 
   function attachSwipe(el, idx) {
     el.addEventListener('pointerdown', (e) => {
@@ -1746,7 +1764,7 @@
       if (!front) return;
       swActive = true;
       swEl = front;
-      swStartX = e.clientX; swStartY = e.clientY; swDx = 0;
+      swStartX = e.clientX; swStartY = e.clientY; swDx = 0; swDy = 0;
       swLastX = e.clientX; swLastT = performance.now(); swVx = 0;
       front.style.transition = 'none';
       e.preventDefault();
@@ -1764,10 +1782,8 @@
     swLastX = e.clientX;
     swLastT = now;
     swDx = e.clientX - swStartX;
-    const dir = dismissDir();
-    const along = dir * swDx;
-    const drag = along > 0 ? swDx : swDx * 0.35;
-    swEl.style.transform = 'translate(-50%, -50%) translateX(' + drag + 'px) rotate(' + (drag * 0.08) + 'deg)';
+    swDy = e.clientY - swStartY;
+    swEl.style.transform = 'translate(-50%, -50%) translateX(' + swDx + 'px) rotate(' + (swDx * 0.06) + 'deg)';
     e.preventDefault();
   }
 
@@ -1777,20 +1793,21 @@
     const front = swEl;
     swActive = false;
     swEl = null;
-    const tapped = Math.abs(swDx) < 10 && Math.abs(e.clientY - swStartY) < 10;
+    const absX = Math.abs(swDx);
+    const absY = Math.abs(e.clientY - swStartY);
+    const tapped = absX < 8 && absY < 8 && Math.abs(swVx) < 0.12;
     if (tapped) {
       front.style.transition = 'transform .28s ease';
       front.style.transform = T().center;
       openViewer(currentPackCards[currentIdx]);
       return;
     }
-    const dir = dismissDir();
-    const need = Math.max(22, window.innerWidth * 0.06);
-    const along = dir * swDx;
-    const flickAlong = dir * swVx;
-    if (along > need || flickAlong > 0.28) {
+    const need = Math.max(12, window.innerWidth * 0.035);
+    const flicked = Math.abs(swVx) > 0.12;
+    const mostlyAcross = absX >= absY * 0.45;
+    if ((absX > need || flicked) && mostlyAcross) {
       if (currentIdx >= wrappers.length - 1) showOverview();
-      else advance();
+      else advance(swDx < 0 ? T().offL : T().offR);
     } else {
       front.style.transition = 'transform .28s cubic-bezier(.2,.8,.3,1)';
       front.style.transform = T().center;
@@ -1994,9 +2011,7 @@
 
   function syncLookChrome() {
     const look = L.current();
-    swipeNextCue.innerHTML = look.id === 'salon'
-      ? '<span class="finger">👉</span>Swipe right for the next card'
-      : '<span class="finger">👈</span>Swipe left for the next card';
+    swipeNextCue.innerHTML = '<span class="finger">👈</span>Swipe left or right for the next card';
   }
 
   function closeLooks() {

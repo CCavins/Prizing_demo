@@ -178,6 +178,14 @@
     user-select: none;
     -webkit-user-select: none;
     flex-shrink: 0;
+    transform-style: flat;
+    -webkit-transform-style: flat;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .tcard > * {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
   .tc-bg {
     position: absolute; inset: 0;
@@ -249,12 +257,14 @@
     left: calc(var(--cardw, 180px) * .06);
     right: calc(var(--cardw, 180px) * .06);
     bottom: calc(var(--cardw, 180px) * .07);
-    background: rgba(6,8,14,.78);
-    backdrop-filter: blur(4px);
+    background: rgba(6,8,14,.88);
     border: 1px solid rgba(255,255,255,.18);
     border-radius: calc(var(--cardw, 180px) * .04);
     padding: calc(var(--cardw,180px)*.045) calc(var(--cardw,180px)*.05);
     text-align: center;
+    transform: translateZ(1px);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
   .tc-name {
     font-weight: 900;

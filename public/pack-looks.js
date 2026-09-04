@@ -155,58 +155,58 @@
     };
   }
 
+  /* Tear sits in the top crimp band so the lid is a thin strip that comes off */
   const TEARS = [
     {
       id: 'wave',
       d: 'M0 8 C12 4 22 12 34 7.5 C46 3 56 13 70 8 C82 4 92 11 100 7',
       lid: 'polygon(0% 0%,100% 0%,100% 76%,90% 90%,78% 70%,66% 92%,52% 66%,40% 88%,26% 72%,12% 86%,0% 78%)',
-      body: 'polygon(0% 14.2%,12% 15.8%,26% 13.2%,40% 16%,52% 12%,66% 16.6%,78% 12.8%,90% 16.2%,100% 13.8%,100% 100%,0% 100%)',
+      body: 'polygon(0% 9.6%,12% 10.6%,26% 8.8%,40% 11%,52% 8.4%,66% 11.2%,78% 8.8%,90% 10.8%,100% 9.4%,100% 100%,0% 100%)',
     },
     {
       id: 'dip',
       d: 'M0 5 C20 5.5 36 13 50 13.5 C64 13 80 6 100 5.5',
       lid: 'polygon(0% 0%,100% 0%,100% 74%,84% 80%,68% 98%,50% 100%,32% 98%,16% 80%,0% 74%)',
-      body: 'polygon(0% 13.2%,16% 14.4%,32% 17.8%,50% 18.2%,68% 17.8%,84% 14.4%,100% 13.2%,100% 100%,0% 100%)',
+      body: 'polygon(0% 9.2%,16% 10%,32% 12%,50% 12.4%,68% 12%,84% 10%,100% 9.2%,100% 100%,0% 100%)',
     },
     {
       id: 'arch',
       d: 'M0 11 C22 10 36 2.5 50 2 C64 2.5 78 10 100 10.5',
       lid: 'polygon(0% 0%,100% 0%,100% 92%,82% 90%,64% 64%,50% 58%,36% 64%,18% 90%,0% 92%)',
-      body: 'polygon(0% 16.6%,18% 16.2%,36% 11.6%,50% 10.6%,64% 11.6%,82% 16.2%,100% 16.6%,100% 100%,0% 100%)',
+      body: 'polygon(0% 11.2%,18% 11%,36% 8.2%,50% 7.6%,64% 8.2%,82% 11%,100% 11.2%,100% 100%,0% 100%)',
     },
     {
       id: 'drift',
       d: 'M0 4 C16 5 32 9 50 12 C70 14.5 86 9 100 10',
       lid: 'polygon(0% 0%,100% 0%,100% 88%,86% 82%,70% 98%,50% 92%,32% 80%,16% 70%,0% 64%)',
-      body: 'polygon(0% 11.6%,16% 12.8%,32% 14.6%,50% 16.8%,70% 18%,86% 15%,100% 16%,100% 100%,0% 100%)',
+      body: 'polygon(0% 8.2%,16% 9%,32% 10.4%,50% 11.6%,70% 12.4%,86% 10.6%,100% 11.2%,100% 100%,0% 100%)',
     },
   ];
 
-  /* Tear sits lower (~20% down) so the lid is a thin Pocket-style strip */
   const TRACE_TEARS = [
     {
       id: 'trace-wave',
       d: 'M0 8 C13 4.5 24 12 37 7.2 C50 2.5 62 13 75 8 C87 4 95 11 100 7.5',
       lid: 'polygon(0% 0%,100% 0%,100% 90%,88% 98%,74% 82%,60% 100%,46% 80%,32% 98%,18% 84%,8% 96%,0% 88%)',
-      body: 'polygon(0% 16.2%,8% 17.6%,18% 15.4%,32% 18%,46% 14.6%,60% 18.2%,74% 15%,88% 18%,100% 16.6%,100% 100%,0% 100%)',
+      body: 'polygon(0% 10.2%,8% 11%,18% 9.6%,32% 11.2%,46% 9.2%,60% 11.4%,74% 9.4%,88% 11.2%,100% 10.4%,100% 100%,0% 100%)',
     },
     {
       id: 'trace-dip',
       d: 'M0 5.5 C18 6 34 13.5 50 14 C66 13.5 82 6.5 100 6',
       lid: 'polygon(0% 0%,100% 0%,100% 78%,84% 84%,68% 100%,50% 100%,32% 100%,16% 84%,0% 78%)',
-      body: 'polygon(0% 14.2%,16% 15.4%,32% 18.2%,50% 18.4%,68% 18.2%,84% 15.4%,100% 14.2%,100% 100%,0% 100%)',
+      body: 'polygon(0% 9.4%,16% 10.2%,32% 12%,50% 12.2%,68% 12%,84% 10.2%,100% 9.4%,100% 100%,0% 100%)',
     },
     {
       id: 'trace-arch',
       d: 'M0 11 C20 10 36 3 50 2.5 C64 3 80 10.5 100 11',
       lid: 'polygon(0% 0%,100% 0%,100% 94%,82% 92%,64% 68%,50% 62%,36% 68%,18% 92%,0% 94%)',
-      body: 'polygon(0% 17.2%,18% 16.8%,36% 12.4%,50% 11.4%,64% 12.4%,82% 16.8%,100% 17.2%,100% 100%,0% 100%)',
+      body: 'polygon(0% 11.4%,18% 11.2%,36% 8.4%,50% 7.8%,64% 8.4%,82% 11.2%,100% 11.4%,100% 100%,0% 100%)',
     },
     {
       id: 'trace-drift',
       d: 'M0 4.5 C16 5.5 30 9.5 48 12.5 C68 15 86 9.5 100 10.5',
       lid: 'polygon(0% 0%,100% 0%,100% 90%,86% 84%,70% 100%,50% 94%,32% 82%,16% 72%,0% 66%)',
-      body: 'polygon(0% 12.2%,16% 13.2%,32% 15%,50% 17.2%,70% 18.4%,86% 15.6%,100% 16.6%,100% 100%,0% 100%)',
+      body: 'polygon(0% 8.4%,16% 9.2%,32% 10.6%,50% 11.8%,70% 12.4%,86% 10.8%,100% 11.2%,100% 100%,0% 100%)',
     },
   ];
 
@@ -263,15 +263,15 @@
     }
     if (pack) pack.style.setProperty('--tear-p', String(p));
     const id = (look && look.id) || current().id;
+    if (p > 0.04) {
+      packTop.style.opacity = '1';
+      packTop.style.transformOrigin = id === 'trace' ? '8% 100%' : '50% 100%';
+      packTop.style.transform = 'rotateX(' + (p * 28) + 'deg) translateY(' + (-p * 10) + '%) rotateZ(' + (-p * 2.2) + 'deg)';
+    } else {
+      packTop.style.transform = '';
+    }
     if (id === 'trace') {
       packInner.style.transform = '';
-      if (p > 0.06) {
-        packTop.style.opacity = '1';
-        packTop.style.transformOrigin = '6% 100%';
-        packTop.style.transform = 'rotateX(' + (p * 14) + 'deg) rotateZ(' + (-p * 2.4) + 'deg)';
-      } else {
-        packTop.style.transform = '';
-      }
       return;
     }
     packInner.style.transform = 'rotateX(' + (p * 5) + 'deg)';
@@ -279,11 +279,11 @@
 
   function openTiming(id) {
     const look = id || current().id;
-    if (look === 'trace') return { rise: 50, opened: 480, handoff: 1180 };
-    if (look === 'salon') return { rise: 380, opened: 980, handoff: 2050 };
-    if (look === 'vault') return { rise: 260, opened: 700, handoff: 1680 };
-    if (look === 'case') return { rise: 300, opened: 760, handoff: 1760 };
-    return { rise: 300, opened: 780, handoff: 1800 };
+    if (look === 'trace') return { rise: 480, opened: 1180, handoff: 2280 };
+    if (look === 'salon') return { rise: 420, opened: 1200, handoff: 2400 };
+    if (look === 'vault') return { rise: 340, opened: 980, handoff: 2050 };
+    if (look === 'case') return { rise: 360, opened: 1020, handoff: 2100 };
+    return { rise: 360, opened: 1050, handoff: 2150 };
   }
 
   function playFx(kind) {

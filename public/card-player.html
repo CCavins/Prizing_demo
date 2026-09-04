@@ -13,7 +13,10 @@
 
   html, body {
     height: 100%;
+    overflow: hidden;
     overscroll-behavior: none;
+    overscroll-behavior-x: none;
+    touch-action: none;
   }
   body {
     font-family: 'Lato', system-ui, -apple-system, sans-serif;
@@ -77,11 +80,12 @@
     display: none;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 70px 20px calc(env(safe-area-inset-bottom, 0px) + 24px);
+    justify-content: flex-start;
+    padding: calc(env(safe-area-inset-top, 0px) + 52px) 16px calc(env(safe-area-inset-bottom, 0px) + 14px);
     z-index: 5;
   }
   .view.active { display: flex; }
+  #viewLocked { justify-content: center; }
 
   /* ── Pack view ───────────────────────────────────── */
   .pack-kicker {
@@ -99,18 +103,29 @@
     letter-spacing: 2px;
     text-transform: uppercase;
     text-align: center;
-    margin-bottom: 22px;
+    margin-bottom: 8px;
     line-height: 1.25;
+    flex-shrink: 0;
   }
+  .pack-kicker { flex-shrink: 0; }
 
   .pack-scene {
     perspective: 1000px;
-    margin-bottom: 22px;
+    margin: 0;
     overflow: visible;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .pack-spin {
     position: relative;
-    width: min(64vw, 260px);
+    --packw: min(64vw, 260px, calc((100dvh - 13rem) * 5 / 7.6));
+    --tear-lid: polygon(0% 0%,100% 0%,100% 82%,0% 78%);
+    --tear-body: polygon(0% 9.6%,100% 10.2%,100% 100%,0% 100%);
+    width: var(--packw);
     aspect-ratio: 5 / 7.6;
     transform-style: preserve-3d;
     overflow: visible;
@@ -184,9 +199,9 @@
   /* Interior visible only after the flap hinges open */
   .pack-mouth {
     position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 15%;
-    border-radius: 14px 14px 0 0;
+    top: 8.8%; left: 0; right: 0;
+    height: 10%;
+    border-radius: 0;
     z-index: 1;
     background:
       radial-gradient(70% 80% at 50% 100%, rgba(255,255,255,.06), transparent 55%),
@@ -197,8 +212,8 @@
   .pack-lid {
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 15.2%;
-    z-index: 5;
+    height: 12.4%;
+    z-index: 9;
     transform-origin: 50% 100%;
     transform-style: preserve-3d;
     border-radius: 14px 14px 0 0;
@@ -268,7 +283,7 @@
   /* Heat-seal highlight — a slightly irregular path, not a ruler line */
   .pack-seam {
     position: absolute;
-    top: 11%;
+    top: 7.2%;
     left: 3%; right: 3%;
     height: 30px;
     z-index: 8;
@@ -290,15 +305,74 @@
     filter: drop-shadow(0 0 3px rgba(255,220,160,.75));
   }
   .pack-spin.tearing .seam-idle-path { opacity: .12; animation: none; }
+  .pack-spin.opening .pack-seam,
   .pack-spin.opened .pack-seam,
-  .pack-spin.opening .pack-seam { opacity: 0; transition: opacity .2s; }
+  .pack-spin.opening .trace-head,
+  .pack-spin.opened .trace-head,
+  .pack-spin.opening .tear-flash,
+  .pack-spin.opened .tear-flash {
+    opacity: 0;
+    visibility: hidden;
+    transition: none;
+    pointer-events: none;
+  }
   .pack-spin.tearing .lid-front {
     box-shadow: 0 14px 22px rgba(0,0,0,.32);
   }
+  .pack-spin.tearing .pack-lid { opacity: 1; }
+  .pack-spin.tearing .pack-lid,
   .pack-spin.opening .pack-lid,
   .pack-spin.opened .pack-lid {
     clip-path: var(--tear-lid);
   }
+  /* Drop the shell so the torn-off top is empty stage, not a gray rounded cap.
+     Clip the printed body (no 3D transform — clip-path actually works).
+     Hide the back face; looking through the hole would otherwise show it. */
+  .pack-spin.tearing .pack-inner,
+  .pack-spin.opening .pack-inner,
+  .pack-spin.opened .pack-inner {
+    background: transparent;
+    box-shadow: none;
+    transform-style: flat;
+    clip-path: var(--tear-body);
+    overflow: hidden;
+    border-radius: 0 0 14px 14px;
+  }
+  .pack-spin.tearing .pack-back,
+  .pack-spin.opening .pack-back,
+  .pack-spin.opened .pack-back {
+    visibility: hidden;
+    opacity: 0;
+    box-shadow: none;
+  }
+  .pack-spin.tearing .pack-front,
+  .pack-spin.opening .pack-front,
+  .pack-spin.opened .pack-front {
+    border-radius: 0;
+    background: none;
+  }
+  .pack-spin.tearing .pack-body,
+  .pack-spin.opening .pack-body,
+  .pack-spin.opened .pack-body {
+    clip-path: var(--tear-body);
+    border-radius: 0 0 14px 14px;
+    box-shadow: none;
+  }
+  .pack-spin.tearing .pack-mouth,
+  .pack-spin.opening .pack-mouth,
+  .pack-spin.opened .pack-mouth,
+  .pack-spin.tearing .pouch-lip,
+  .pack-spin.opening .pouch-lip,
+  .pack-spin.opened .pouch-lip {
+    opacity: 0;
+    visibility: hidden;
+  }
+  .pack-spin.tearing .pd-crimp-top,
+  .pack-spin.opening .pd-crimp-top,
+  .pack-spin.opened .pd-crimp-top,
+  .pack-spin.tearing .pb-crimp-top,
+  .pack-spin.opening .pb-crimp-top,
+  .pack-spin.opened .pb-crimp-top { opacity: 0; }
 
   /* Unifies lid + body into one sealed wrapper while closed */
   .pack-wrap-sheen {
@@ -371,7 +445,7 @@
   }
   .pd-brand {
     position: absolute;
-    top: 10.5%; left: 0; right: 0;
+    top: 13.2%; left: 0; right: 0;
     text-align: center;
     font-weight: 900;
     font-size: clamp(10px, 3vw, 13px);
@@ -467,7 +541,7 @@
   .pack-well {
     position: absolute;
     left: 10%; right: 10%;
-    top: 16%;
+    top: 11%;
     bottom: 7%;
     overflow: hidden;
     z-index: 1;
@@ -477,8 +551,8 @@
   .pack-spin.opening .pack-well {
     overflow: visible;
     z-index: 3;
-    /* Only the mouth and above — never paint a card over the printed face */
-    clip-path: inset(-220% -40% 72% -40%);
+    /* Only the open mouth and above — cards leave the torn-off top */
+    clip-path: inset(-240% -40% 78% -40%);
   }
   .pack-spin.opened .pack-well {
     overflow: visible;
@@ -492,24 +566,24 @@
   .pack-cards .tcard {
     position: absolute;
     left: 50%; top: 50%;
-    --cardw: calc(min(64vw, 260px) * .7744);
+    --cardw: calc(var(--packw) * .7744);
     width: 96%;
     transform: translate(-50%, 42%);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
   .pack-cards .tcard.rise {
-    transition: transform .9s cubic-bezier(.22,.78,.22,1);
+    transition: transform 1.15s cubic-bezier(.22,.78,.22,1);
     transform: translate(-50%, -58%);
   }
 
   /* Top comes off first; then the pack lowers as the card is drawn out */
   .pack-spin.opening .pack-inner {
-    transition: transform .9s .34s cubic-bezier(.22,.7,.2,1);
+    transition: transform 1.15s .42s cubic-bezier(.22,.7,.2,1);
     transform: translateY(30%) scale(.97);
   }
   .pack-spin.opened .pack-inner {
-    transition: transform .65s cubic-bezier(.3,.2,.2,1), opacity .5s ease;
+    transition: transform .85s cubic-bezier(.3,.2,.2,1), opacity .65s ease;
     transform: translateY(48%) scale(.92);
     opacity: 0;
   }
@@ -520,8 +594,8 @@
   }
 
   .pack-lid.flyoff {
-    transition: transform .5s cubic-bezier(.16,.78,.2,1), opacity .32s .22s ease;
-    transform: translateY(-92%) rotate(-8deg) !important;
+    transition: transform 1.05s cubic-bezier(.16,.78,.2,1), opacity .4s .45s ease;
+    transform: translateY(-160%) rotate(-10deg) !important;
     pointer-events: none;
   }
   .pack-spin.opening .pack-lid.flyoff,
@@ -549,7 +623,8 @@
     50% { transform: translateX(-14px); opacity: 1; }
   }
   .packs-left {
-    margin-top: 12px;
+    margin-top: 8px;
+    flex-shrink: 0;
     font-weight: 700;
     font-size: 11px;
     letter-spacing: 2px;
@@ -583,14 +658,7 @@
     display: flex;
     align-items: center;
   }
-  .tip-track .tip-dash {
-    width: 100%;
-    height: 2px;
-    border: 0;
-    border-radius: 99px;
-    background: linear-gradient(90deg, transparent, rgba(255,228,180,.85), transparent);
-    box-shadow: 0 0 12px rgba(255,210,150,.45);
-  }
+  .tip-track .tip-dash { display: none; }
   .tip-finger {
     position: absolute;
     top: 50%;
@@ -636,17 +704,23 @@
   .locked-msg .big { font-size: 44px; margin-bottom: 12px; }
 
   /* ── Reveal view ─────────────────────────────────── */
+  #viewReveal .stack-caption,
+  #viewReveal .swipe-next-cue,
+  #viewReveal .btn-row { flex-shrink: 0; }
   .stack-zone {
     position: relative;
     width: 100%;
-    height: min(54vh, 440px);
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
     overflow: visible;
     touch-action: none;
   }
   .stack-card {
     position: absolute;
     left: 50%; top: 50%;
-    width: min(62vw, 250px);
+    --cardw: min(58vw, 240px, calc((100dvh - 16rem) * 5 / 7));
+    width: var(--cardw);
     aspect-ratio: 5 / 7;
     transform-style: preserve-3d;
     will-change: transform;
@@ -665,7 +739,7 @@
     -webkit-backface-visibility: hidden;
   }
   /* real length (not %) so calc()-based type sizing works */
-  .sc-face .tcard { --cardw: min(62vw, 250px); width: 100%; height: 100%; }
+  .sc-face .tcard { --cardw: inherit; width: 100%; height: 100%; }
   .sc-back { transform: rotateY(180deg); }
 
   .stack-caption {
@@ -722,8 +796,8 @@
     flex-direction: column;
     gap: 10px;
     width: min(320px, 86vw);
-    margin-top: 12px;
-    min-height: 128px;
+    margin-top: 8px;
+    min-height: 0;
   }
   .btn {
     border: none;
@@ -766,6 +840,13 @@
     transition: opacity .4s;
   }
   .keep-note.show { opacity: 1; }
+
+  @media (max-height: 720px) {
+    .pack-kicker { display: none; }
+    .pack-title { font-size: 16px; letter-spacing: 1px; margin-bottom: 4px; }
+    .brand { font-size: 11px; letter-spacing: 2px; }
+    .packs-left { font-size: 10px; margin-top: 4px; }
+  }
 
   /* ── Collection view ─────────────────────────────── */
   #viewCollection { justify-content: flex-start; overflow: hidden; }
@@ -895,15 +976,21 @@
     transform-style: preserve-3d;
     will-change: transform;
   }
-  .viewer-card-holder .tcard {
-    --cardw: min(74vw, 330px);
+  .viewer-card-holder > .tcard:not(.viewer-back) {
+    --cardw: min(62vw, 280px, calc((100dvh - 10rem) * 5 / 7));
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    transform: rotateY(0deg) translateZ(1px);
   }
   .viewer-card-holder .viewer-back {
     position: absolute;
     inset: 0;
-    transform: rotateY(180deg);
+    width: 100%;
+    height: 100%;
+    --cardw: min(62vw, 280px, calc((100dvh - 10rem) * 5 / 7));
+    transform: rotateY(180deg) translateZ(1px);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
   .viewer-hint {
     margin-top: 26px;
@@ -985,44 +1072,44 @@
             <div class="pd-crimp-bot"></div>
             <div class="pd-sheen"></div>
           </div>
-          <div class="pack-lid" id="packTop">
-            <div class="lid-front foil-mat">
-              <div class="lid-crimp"></div>
-              <div class="lid-brand">VIXI</div>
-              <div class="lid-sheen"></div>
-              <div class="lid-rip" aria-hidden="true"></div>
-            </div>
-            <div class="lid-back"></div>
-          </div>
-          <div class="pack-seam" id="packSeam">
-            <svg class="seam-svg" viewBox="0 0 100 16" preserveAspectRatio="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="seamGold" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0" stop-color="#ffe29a"/>
-                  <stop offset="0.45" stop-color="#fff"/>
-                  <stop offset="1" stop-color="#ffd789"/>
-                </linearGradient>
-                <linearGradient id="seamPocket" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0" stop-color="#7ef0ff"/>
-                  <stop offset="0.38" stop-color="#ff6ad5"/>
-                  <stop offset="0.7" stop-color="#fff"/>
-                  <stop offset="1" stop-color="#ff9ae0"/>
-                </linearGradient>
-                <linearGradient id="seamHot" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0" stop-color="#fff"/>
-                  <stop offset="0.5" stop-color="#fff"/>
-                  <stop offset="1" stop-color="#ffe6fb"/>
-                </linearGradient>
-              </defs>
-              <path id="seamGlow" class="seam-glow-path" fill="none" stroke-linecap="round"/>
-              <path id="seamIdle" class="seam-idle-path" fill="none" stroke-linecap="round"/>
-              <path id="seamFill" class="seam-fill-path" fill="none" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div class="trace-head" id="traceHead" aria-hidden="true"></div>
-          <div class="tear-flash" id="tearFlash" aria-hidden="true"></div>
           <div class="pack-wrap-sheen"></div>
         </div>
+      </div>
+      <div class="pack-seam" id="packSeam">
+        <svg class="seam-svg" viewBox="0 0 100 16" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="seamGold" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#ffe29a"/>
+              <stop offset="0.45" stop-color="#fff"/>
+              <stop offset="1" stop-color="#ffd789"/>
+            </linearGradient>
+            <linearGradient id="seamPocket" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#7ef0ff"/>
+              <stop offset="0.38" stop-color="#ff6ad5"/>
+              <stop offset="0.7" stop-color="#fff"/>
+              <stop offset="1" stop-color="#ff9ae0"/>
+            </linearGradient>
+            <linearGradient id="seamHot" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#fff"/>
+              <stop offset="0.5" stop-color="#fff"/>
+              <stop offset="1" stop-color="#ffe6fb"/>
+            </linearGradient>
+          </defs>
+          <path id="seamGlow" class="seam-glow-path" fill="none" stroke-linecap="round"/>
+          <path id="seamIdle" class="seam-idle-path" fill="none" stroke-linecap="round"/>
+          <path id="seamFill" class="seam-fill-path" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="trace-head" id="traceHead" aria-hidden="true"></div>
+      <div class="tear-flash" id="tearFlash" aria-hidden="true"></div>
+      <div class="pack-lid" id="packTop">
+        <div class="lid-front foil-mat">
+          <div class="lid-crimp"></div>
+          <div class="lid-brand">VIXI</div>
+          <div class="lid-sheen"></div>
+          <div class="lid-rip" aria-hidden="true"></div>
+        </div>
+        <div class="lid-back"></div>
       </div>
       <div class="pack-well" id="packWell">
         <div class="pack-cards" id="packCards"></div>
@@ -1147,6 +1234,7 @@
   };
   function show(name) {
     Object.keys(views).forEach(k => views[k].classList.toggle('active', k === name));
+    if (name !== 'pack') hideTipNow();
   }
 
   const toast = document.getElementById('toast');
@@ -1187,13 +1275,13 @@
   const tipOverlay = document.getElementById('tipOverlay');
   let tipTimer = null;
   function showTip() {
-    if (tearDone || tearActive) return; // ripping or ripped — don't show a late hint
-    // line the swipe demo up with the sealed heat-seal (26% down the pack)
+    if (tearDone || tearActive) return;
+    if (!views.pack.classList.contains('active')) return;
     const track = tipOverlay.querySelector('.tip-track');
     const scene = document.querySelector('.pack-scene');
     if (track && scene) {
       const r = scene.getBoundingClientRect();
-      track.style.top = Math.max(0, r.top + r.height * 0.14 - 35) + 'px';
+      track.style.top = Math.max(0, r.top + r.height * 0.09 - 35) + 'px';
     }
     tipOverlay.classList.add('active');
     tipOverlay.classList.remove('hiding');
@@ -1348,11 +1436,6 @@
     packTop.style.transform = '';
     packTop.style.transformOrigin = '';
     packInner.style.transform = '';
-    if (tearFlash && L.current().id === 'trace') {
-      tearFlash.classList.remove('on');
-      void tearFlash.offsetWidth;
-      tearFlash.classList.add('on');
-    }
     packSpin.classList.remove('tearing');
     packSpin.classList.add('opening');
     packTop.style.opacity = '1';
@@ -1497,9 +1580,7 @@
 
     // Card 1: start exactly where the risen pack card was (continuity)
     const zr = stackZone.getBoundingClientRect();
-    const finalW = L.current().id === 'trace'
-      ? Math.min(window.innerWidth * 0.72, 290)
-      : Math.min(window.innerWidth * 0.62, 250);
+    const finalW = wrappers[0] ? wrappers[0].getBoundingClientRect().width : Math.min(window.innerWidth * 0.58, 240);
     const zoneCX = zr.left + zr.width / 2;
     const zoneCY = zr.top + zr.height / 2;
     if (fromRect && fromRect.width > 0) {
@@ -1828,8 +1909,11 @@
     if (!viewer.classList.contains('active')) return;
     if (!vDragging) {
       vIdleT += 0.016;
-      vRotY += Math.sin(vIdleT * 0.9) * 0.12 + 0.08;
-      vRotX += (0 - vRotX) * 0.02;
+      // Slow rock only — never past a few degrees, never onto the back.
+      const targetY = Math.sin(vIdleT * 0.55) * 8;
+      const targetX = Math.sin(vIdleT * 0.4 + 1.15) * 4.5;
+      vRotY += (targetY - vRotY) * 0.04;
+      vRotX += (targetX - vRotX) * 0.04;
       applyViewerTransform();
     }
     vIdleRaf = requestAnimationFrame(idleSpin);
@@ -1906,6 +1990,20 @@
 
   document.getElementById('looksChip').addEventListener('click', openLooks);
   document.getElementById('looksBackdrop').addEventListener('click', closeLooks);
+
+  // Keep iOS/Chrome from treating a left-edge rip as “back”
+  function lockBrowserBack() {
+    try {
+      if (!history.state || history.state.vixiLock !== 1) {
+        history.pushState({ vixiLock: 1 }, '', location.href);
+      }
+    } catch (e) {}
+  }
+  window.addEventListener('popstate', lockBrowserBack);
+  lockBrowserBack();
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches && e.touches[0] && e.touches[0].clientX < 24) e.preventDefault();
+  }, { passive: false, capture: true });
 
   // ── Boot ─────────────────────────────────────────────
   S.ready.then(() => {

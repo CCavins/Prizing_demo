@@ -65,7 +65,7 @@
     },
   };
 
-  const ORDER = ['trace', 'crimp', 'case', 'vault', 'salon'];
+  const ORDER = ['trace', 'crimp', 'salon'];
 
   function fromQuery() {
     const m = /(?:\?|&)look=([a-z]+)/i.exec(location.search);
@@ -78,9 +78,9 @@
   }
 
   function apply(id, { persist = true } = {}) {
-    const look = LOOKS[id] || LOOKS.trace;
+    const look = (ORDER.indexOf(id) >= 0 && LOOKS[id]) ? LOOKS[id] : LOOKS.trace;
     document.body.dataset.look = look.id;
-    ORDER.forEach((oid) => document.body.classList.remove('look-' + oid));
+    ['trace', 'crimp', 'case', 'vault', 'salon'].forEach((oid) => document.body.classList.remove('look-' + oid));
     document.body.classList.add('look-' + look.id);
     if (persist) {
       try { localStorage.setItem(KEY, look.id); } catch (e) {}
@@ -106,9 +106,10 @@
   }
 
   function boot() {
-    const start = fromQuery() || (function () {
+    const raw = fromQuery() || (function () {
       try { return localStorage.getItem(KEY); } catch (e) { return null; }
     }()) || 'trace';
+    const start = ORDER.indexOf(raw) >= 0 ? raw : 'trace';
     apply(start, { persist: false });
     pickTear();
     requestAnimationFrame(function () { applyTear(tearVariant); });
@@ -174,49 +175,13 @@
 
   const TEARS = [
     {
-      id: 'wave',
-      d: 'M0 8 C12 4 22 12 34 7.5 C46 3 56 13 70 8 C82 4 92 11 100 7',
-      body: 'polygon(0% 9.6%,12% 10.6%,26% 8.8%,40% 11%,52% 8.4%,66% 11.2%,78% 8.8%,90% 10.8%,100% 9.4%,100% 100%,0% 100%)',
-    },
-    {
-      id: 'dip',
-      d: 'M0 5 C20 5.5 36 13 50 13.5 C64 13 80 6 100 5.5',
-      body: 'polygon(0% 9.2%,16% 10%,32% 12%,50% 12.4%,68% 12%,84% 10%,100% 9.2%,100% 100%,0% 100%)',
-    },
-    {
-      id: 'arch',
-      d: 'M0 11 C22 10 36 2.5 50 2 C64 2.5 78 10 100 10.5',
-      body: 'polygon(0% 11.2%,18% 11%,36% 8.2%,50% 7.6%,64% 8.2%,82% 11%,100% 11.2%,100% 100%,0% 100%)',
-    },
-    {
-      id: 'drift',
-      d: 'M0 4 C16 5 32 9 50 12 C70 14.5 86 9 100 10',
-      body: 'polygon(0% 8.2%,16% 9%,32% 10.4%,50% 11.6%,70% 12.4%,86% 10.6%,100% 11.2%,100% 100%,0% 100%)',
+      id: 'clean',
+      d: 'M0 8 C32 6.8 68 9.4 100 7.6',
+      body: 'polygon(0% 9.5%, 38% 9.1%, 72% 10.2%, 100% 9.4%, 100% 100%, 0% 100%)',
     },
   ];
 
-  const TRACE_TEARS = [
-    {
-      id: 'trace-wave',
-      d: 'M0 8 C13 4.5 24 12 37 7.2 C50 2.5 62 13 75 8 C87 4 95 11 100 7.5',
-      body: 'polygon(0% 10.2%,8% 11%,18% 9.6%,32% 11.2%,46% 9.2%,60% 11.4%,74% 9.4%,88% 11.2%,100% 10.4%,100% 100%,0% 100%)',
-    },
-    {
-      id: 'trace-dip',
-      d: 'M0 5.5 C18 6 34 13.5 50 14 C66 13.5 82 6.5 100 6',
-      body: 'polygon(0% 9.4%,16% 10.2%,32% 12%,50% 12.2%,68% 12%,84% 10.2%,100% 9.4%,100% 100%,0% 100%)',
-    },
-    {
-      id: 'trace-arch',
-      d: 'M0 11 C20 10 36 3 50 2.5 C64 3 80 10.5 100 11',
-      body: 'polygon(0% 11.4%,18% 11.2%,36% 8.4%,50% 7.8%,64% 8.4%,82% 11.2%,100% 11.4%,100% 100%,0% 100%)',
-    },
-    {
-      id: 'trace-drift',
-      d: 'M0 4.5 C16 5.5 30 9.5 48 12.5 C68 15 86 9.5 100 10.5',
-      body: 'polygon(0% 8.4%,16% 9.2%,32% 10.6%,50% 11.8%,70% 12.4%,86% 10.8%,100% 11.2%,100% 100%,0% 100%)',
-    },
-  ];
+  const TRACE_TEARS = TEARS;
 
   let tearLen = 0;
   let tearVariant = TEARS[0];
@@ -249,14 +214,7 @@
   }
 
   function pickTear() {
-    const id = current().id;
-    let pool = TEARS;
-    if (id === 'trace') pool = TRACE_TEARS;
-    else if (id === 'crimp') pool = [TEARS[0], TEARS[1]];
-    else if (id === 'case') pool = [TEARS[2], TEARS[0]];
-    else if (id === 'vault') pool = [TEARS[2], TEARS[3]];
-    else if (id === 'salon') pool = [TEARS[3], TEARS[1]];
-    applyTear(pool[Math.floor(Math.random() * pool.length)]);
+    applyTear(TEARS[0]);
   }
 
   function tearDelta(look, startX, startY, e, w, h) {

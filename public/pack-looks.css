@@ -452,9 +452,17 @@ body.look-trace .pouch-lip {
   opacity: 0;
   pointer-events: none;
 }
-body.look-trace .pack-spin.opening .pouch-lip,
+body.look-trace .pack-spin.opening .pouch-lip {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+}
 body.look-trace .pack-spin.opened .pouch-lip { opacity: 0; visibility: hidden; }
-body.look-trace .pack-mouth { background: none; }
+body.look-trace .pack-mouth {
+  background:
+    radial-gradient(70% 90% at 50% 0%, rgba(255,255,255,.12), transparent 46%),
+    linear-gradient(180deg, #3a4658 0%, #121820 40%, #1a2433 100%);
+}
 
 body.look-trace .rip-edge,
 body.look-trace .lid-rip {

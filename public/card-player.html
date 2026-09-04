@@ -198,16 +198,20 @@
     color: rgba(20,30,45,.18);
   }
 
-  /* Interior visible only after the flap hinges open */
+  /* Dark cavity you look into once the top tears off */
   .pack-mouth {
     position: absolute;
-    top: 8.8%; left: 0; right: 0;
-    height: 10%;
-    border-radius: 0;
+    top: 7.4%; left: 3%; right: 3%;
+    height: 13%;
+    border-radius: 0 0 10px 10px;
     z-index: 1;
+    opacity: 0;
     background:
-      radial-gradient(70% 80% at 50% 100%, rgba(255,255,255,.06), transparent 55%),
-      linear-gradient(180deg, #070b10 0%, #141b26 100%);
+      radial-gradient(70% 90% at 50% 0%, rgba(255,255,255,.1), transparent 46%),
+      linear-gradient(180deg, #2a3344 0%, #0b0f16 38%, #151c28 100%);
+    box-shadow:
+      inset 0 10px 18px rgba(0,0,0,.55),
+      inset 0 -8px 14px rgba(0,0,0,.4);
   }
 
   /* Torn-off top is a real strip — never a full-pack gray square over the card */
@@ -217,8 +221,8 @@
     height: 13.2%;
     z-index: 6;
     transform-origin: 50% 100%;
-    transform-style: flat;
-    overflow: hidden;
+    transform-style: preserve-3d;
+    overflow: visible;
     border-radius: 14px 14px 0 0;
     opacity: 0;
     pointer-events: none;
@@ -243,10 +247,10 @@
     animation: foilSweep 3.2s ease-in-out infinite;
   }
   .lid-back {
-    transform: rotateX(180deg);
+    transform: rotateX(180deg) translateZ(1px);
     background:
-      linear-gradient(180deg, #2c3546 0%, #121820 70%, #0c1016 100%);
-    box-shadow: inset 0 0 22px rgba(0,0,0,.45);
+      linear-gradient(180deg, #3a4558 0%, #1a222e 42%, #0c1016 100%);
+    box-shadow: inset 0 0 18px rgba(0,0,0,.5);
   }
   .lid-back::after {
     content: '';
@@ -304,7 +308,7 @@
   }
   .pack-spin.opening .pack-lid,
   .pack-spin.opened .pack-lid {
-    clip-path: polygon(0% 0%, 100% 0%, 100% 78%, 86% 100%, 72% 82%, 58% 100%, 50% 86%, 42% 100%, 28% 82%, 14% 100%, 0% 80%);
+    clip-path: polygon(0% 0%, 100% 0%, 100% 88%, 68% 100%, 32% 86%, 0% 94%);
   }
   /* Clip the printed body only — not the transforming wrapper — so a rotate
      cannot drop the clip and flash a gray rectangle over the card. */
@@ -333,9 +337,50 @@
     border-radius: 0 0 14px 14px;
     box-shadow: none;
   }
-  .pack-spin.opening .pack-mouth,
-  .pack-spin.opened .pack-mouth,
-  .pack-spin.opening .pouch-lip,
+  .pack-cavity {
+    position: absolute;
+    left: 5%; right: 5%;
+    top: 8.6%;
+    height: 22px;
+    z-index: 4;
+    pointer-events: none;
+    opacity: 0;
+    border-radius: 3px;
+    background:
+      radial-gradient(90% 80% at 50% 0%, rgba(255,255,255,.14), transparent 55%),
+      linear-gradient(180deg, #3d4a5c 0%, #0a0d12 42%, #161d28 100%);
+    box-shadow:
+      inset 0 6px 10px rgba(0,0,0,.55),
+      inset 0 -3px 6px rgba(0,0,0,.35),
+      0 1px 0 rgba(255,255,255,.18);
+  }
+  .pack-spin.opening .pack-cavity { opacity: 1; }
+  .pack-spin.opened .pack-cavity { opacity: 0; }
+  .pack-spin.opening .pack-mouth {
+    opacity: 1;
+    visibility: visible;
+  }
+  .pack-spin.opened .pack-mouth {
+    opacity: 0;
+    visibility: hidden;
+  }
+  .pouch-lip {
+    position: absolute;
+    left: 4%; right: 4%;
+    top: 9%;
+    height: 9px;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0;
+    border-radius: 2px;
+    background: linear-gradient(180deg, rgba(18, 22, 30, .7), rgba(18, 22, 30, 0));
+    box-shadow: 0 2px 6px rgba(0,0,0,.35);
+  }
+  .pack-spin.opening .pouch-lip {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+  }
   .pack-spin.opened .pouch-lip {
     opacity: 0;
     visibility: hidden;
@@ -635,12 +680,12 @@
   .tip-overlay.active { display: flex; }
   .tip-overlay.hiding { opacity: 0; }
   .tip-track {
-    /* pinned to the pack's tear line via JS (top set in showTip) */
+    /* pinned to the pack seam via JS */
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     width: min(80vw, 320px);
-    height: 70px;
+    height: 44px;
     display: flex;
     align-items: center;
   }
@@ -649,16 +694,17 @@
     position: absolute;
     top: 50%;
     left: 0;
-    font-size: 58px;
-    transform: translateY(-40%);
-    filter: drop-shadow(0 6px 14px rgba(0,0,0,.6));
+    font-size: 34px;
+    line-height: 1;
+    transform: translate(-30%, -50%) rotate(90deg);
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,.55));
     animation: tipSwipe 1.5s ease-in-out infinite;
   }
   @keyframes tipSwipe {
-    0%   { left: 0; opacity: 0; }
+    0%   { left: 2%; opacity: 0; }
     15%  { opacity: 1; }
-    80%  { left: calc(100% - 58px); opacity: 1; }
-    100% { left: calc(100% - 58px); opacity: 0; }
+    80%  { left: 86%; opacity: 1; }
+    100% { left: 86%; opacity: 0; }
   }
   .tip-text {
     text-shadow: 0 2px 10px rgba(0,0,0,.85);
@@ -768,13 +814,13 @@
   .swipe-next-cue.visible { visibility: visible; }
   .swipe-next-cue .finger {
     display: inline-block;
-    font-size: 17px;
-    margin-right: 6px;
+    font-size: 20px;
+    margin-right: 8px;
     animation: fingerSlideL 1.6s ease-in-out infinite;
   }
   @keyframes fingerSlideL {
-    0%, 100% { transform: translateX(14px); opacity: .5; }
-    50% { transform: translateX(-14px); opacity: 1; }
+    0%, 100% { transform: translateX(14px) rotate(-90deg); opacity: .5; }
+    50% { transform: translateX(-14px) rotate(-90deg); opacity: 1; }
   }
 
   .btn-row {
@@ -1095,6 +1141,7 @@
       </div>
       <div class="trace-head" id="traceHead" aria-hidden="true"></div>
       <div class="tear-flash" id="tearFlash" aria-hidden="true"></div>
+      <div class="pack-cavity" aria-hidden="true"></div>
       <div class="pack-lid" id="packTop">
         <div class="lid-front foil-mat">
           <div class="pd-crimp-top"></div>
@@ -1116,7 +1163,7 @@
 <div class="tip-overlay" id="tipOverlay">
   <div class="tip-track">
     <div class="tip-dash"></div>
-    <div class="tip-finger">👉</div>
+    <div class="tip-finger">👆</div>
   </div>
   <div class="tip-text" id="tipText">Swipe right across the seal<br>to open your pack</div>
 </div>
@@ -1133,7 +1180,7 @@
 <div class="view" id="viewReveal">
   <div class="stack-zone" id="stackZone"></div>
   <div class="stack-caption" id="stackCaption"></div>
-  <div class="swipe-next-cue" id="swipeNextCue"><span class="finger">👈</span>Swipe left or right for the next card</div>
+  <div class="swipe-next-cue" id="swipeNextCue"><span class="finger">👆</span>Swipe left or right for the next card</div>
   <div class="btn-row">
     <button class="btn btn-primary btn-reveal" id="btnSave">Save to Collection</button>
     <button class="btn btn-ghost btn-reveal" id="btnTryAgain">Or Try Another Pack</button>
@@ -1169,7 +1216,7 @@
   <div class="looks-panel" role="dialog" aria-label="Pack looks">
     <div class="looks-handle"></div>
     <h2>Pack looks</h2>
-    <p class="looks-lead">Five ways to draw a card out of a sealed pack. Trace is the phone-sized Pocket-style open: glow-trace, snap, top strip off, card out of the pouch. Every look swipes the seal left to right. Pick one, then rip.</p>
+    <p class="looks-lead">Three ways to draw a card out of a sealed pack. Trace is the phone-sized Pocket-style open. Every look swipes the seal left to right. Pick one, then rip.</p>
     <div id="looksList"></div>
   </div>
 </div>
@@ -1289,20 +1336,30 @@
   // ── Swipe tip overlay ────────────────────────────────
   const tipOverlay = document.getElementById('tipOverlay');
   let tipTimer = null;
+  function placeTipTrack() {
+    const track = tipOverlay.querySelector('.tip-track');
+    const seam = document.getElementById('packSeam');
+    const pack = document.getElementById('packSpin');
+    const target = seam || pack;
+    if (!track || !target) return;
+    const r = target.getBoundingClientRect();
+    track.style.top = (r.top + r.height / 2 - 22) + 'px';
+    track.style.left = r.left + 'px';
+    track.style.width = r.width + 'px';
+    track.style.transform = 'none';
+  }
   function showTip() {
     if (tearDone || tearActive) return;
     if (!views.pack.classList.contains('active')) return;
-    const track = tipOverlay.querySelector('.tip-track');
-    const scene = document.querySelector('.pack-scene');
-    if (track && scene) {
-      const r = scene.getBoundingClientRect();
-      track.style.top = Math.max(0, r.top + r.height * 0.09 - 35) + 'px';
-    }
+    placeTipTrack();
     tipOverlay.classList.add('active');
     tipOverlay.classList.remove('hiding');
     clearTimeout(tipTimer);
     tipTimer = setTimeout(hideTip, 2600);
   }
+  window.addEventListener('resize', () => {
+    if (tipOverlay.classList.contains('active')) placeTipTrack();
+  });
   function hideTipNow() {
     clearTimeout(tipTimer);
     tipOverlay.classList.remove('active', 'hiding');
@@ -1489,9 +1546,11 @@
     packSpin.classList.remove('tearing', 'spinning');
     packSpin.classList.add('opening');
     packTop.style.opacity = '1';
+    packTop.style.transform = 'rotateX(-32deg) translateY(-6%)';
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         packTop.style.opacity = '';
+        packTop.style.transform = '';
         packTop.classList.add('flyoff');
       });
     });
@@ -2011,7 +2070,7 @@
 
   function syncLookChrome() {
     const look = L.current();
-    swipeNextCue.innerHTML = '<span class="finger">👈</span>Swipe left or right for the next card';
+    swipeNextCue.innerHTML = '<span class="finger">👆</span>Swipe left or right for the next card';
   }
 
   function closeLooks() {

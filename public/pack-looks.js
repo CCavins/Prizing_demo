@@ -279,41 +279,13 @@
       glow.style.strokeDashoffset = String(tearLen * (1 - p));
     }
     if (pack) pack.style.setProperty('--tear-p', String(p));
-    const id = (look && look.id) || current().id;
-    const originY = (pack && pack.style.getPropertyValue('--tear-origin-y')) || '10%';
-    if (p <= 0.04) {
+    // Gesture only paints the seal highlight. The lid stays sealed until
+    // completeTear plays the split / flyoff.
+    if (packTop) {
       packTop.style.transform = '';
-      packInner.style.transform = '';
-      return;
+      packTop.style.opacity = '';
     }
-    packTop.style.opacity = '1';
-    if (id === 'trace') {
-      packTop.style.transformOrigin = '8% ' + originY;
-      packTop.style.transform = 'rotateX(' + (p * 26) + 'deg) translateY(' + (-p * 1.6) + '%) rotateZ(' + (-p * 2.2) + 'deg)';
-      packInner.style.transform = '';
-      return;
-    }
-    if (id === 'case') {
-      packTop.style.transformOrigin = '88% ' + originY;
-      packTop.style.transform = 'rotateZ(' + (p * 8) + 'deg) rotateX(' + (p * 18) + 'deg)';
-      packInner.style.transform = 'rotateZ(' + (p * 4) + 'deg) rotateX(' + (p * 6) + 'deg)';
-      return;
-    }
-    if (id === 'vault') {
-      packTop.style.transformOrigin = '50% ' + originY;
-      packTop.style.transform = 'translateY(' + (-p * 3.2) + '%) rotateX(' + (p * 16) + 'deg)';
-      packInner.style.transform = 'scale(' + (1 - p * 0.04) + ')';
-      return;
-    }
-    if (id === 'salon') {
-      packTop.style.transformOrigin = '50% ' + originY;
-      packTop.style.transform = 'rotateX(' + (p * 14) + 'deg) translateY(' + (-p * 0.6) + '%) rotateZ(' + (-p * 1) + 'deg)';
-      packInner.style.transform = '';
-      return;
-    }
-    packTop.style.transformOrigin = '50% ' + originY;
-    packTop.style.transform = 'rotateX(' + (p * 38) + 'deg) translateY(' + (-p * 0.8) + '%)';
-    packInner.style.transform = 'rotateX(' + (p * 3) + 'deg)';
+    if (packInner) packInner.style.transform = '';
   }
 
   function openTiming(id) {

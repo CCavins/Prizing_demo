@@ -221,7 +221,6 @@
   }
   .pack-spin.opening .pack-lid,
   .pack-spin.opened .pack-lid { opacity: 1; }
-  .pack-spin.tearing .pack-lid { will-change: transform; }
   .lid-front, .lid-back {
     position: absolute; inset: 0;
     backface-visibility: hidden;
@@ -295,17 +294,14 @@
     transition: none;
     pointer-events: none;
   }
-  .pack-spin.tearing .lid-front {
+  /* Split only after the highlight commits — never while pressing or tracing. */
+  .pack-spin.opening .lid-front {
     box-shadow: 0 14px 22px rgba(0,0,0,.32);
   }
-  .pack-spin.tearing .pack-lid { opacity: 1; }
-  .pack-spin.tearing .pack-lid,
   .pack-spin.opening .pack-lid,
   .pack-spin.opened .pack-lid,
-  .pack-spin.tearing .lid-front,
   .pack-spin.opening .lid-front,
   .pack-spin.opened .lid-front,
-  .pack-spin.tearing .lid-back,
   .pack-spin.opening .lid-back,
   .pack-spin.opened .lid-back {
     clip-path: var(--tear-lid);
@@ -313,7 +309,6 @@
   /* Drop the shell so the torn-off top is empty stage, not a gray rounded cap.
      Clip the printed body (no 3D transform — clip-path actually works).
      Hide the back face; looking through the hole would otherwise show it. */
-  .pack-spin.tearing .pack-inner,
   .pack-spin.opening .pack-inner,
   .pack-spin.opened .pack-inner {
     background: transparent;
@@ -323,39 +318,32 @@
     overflow: hidden;
     border-radius: 0 0 14px 14px;
   }
-  .pack-spin.tearing .pack-back,
   .pack-spin.opening .pack-back,
   .pack-spin.opened .pack-back {
     visibility: hidden;
     opacity: 0;
     box-shadow: none;
   }
-  .pack-spin.tearing .pack-front,
   .pack-spin.opening .pack-front,
   .pack-spin.opened .pack-front {
     border-radius: 0;
     background: none;
   }
-  .pack-spin.tearing .pack-inner .pack-body,
   .pack-spin.opening .pack-inner .pack-body,
   .pack-spin.opened .pack-inner .pack-body {
     clip-path: var(--tear-body);
     border-radius: 0 0 14px 14px;
     box-shadow: none;
   }
-  .pack-spin.tearing .pack-mouth,
   .pack-spin.opening .pack-mouth,
   .pack-spin.opened .pack-mouth,
-  .pack-spin.tearing .pouch-lip,
   .pack-spin.opening .pouch-lip,
   .pack-spin.opened .pouch-lip {
     opacity: 0;
     visibility: hidden;
   }
-  .pack-spin.tearing .pack-inner .pd-crimp-top,
   .pack-spin.opening .pack-inner .pd-crimp-top,
   .pack-spin.opened .pack-inner .pd-crimp-top,
-  .pack-spin.tearing .pb-crimp-top,
   .pack-spin.opening .pb-crimp-top,
   .pack-spin.opened .pb-crimp-top { opacity: 0; }
 
@@ -1352,6 +1340,8 @@
   let tearDone = false;
   let tearDir = 'right';
   let holdTimer = null;
+  let highlightLock = false;
+  let highlightRaf = 0;
 
   const seamGlow = document.getElementById('seamGlow');
   const tearFlash = document.getElementById('tearFlash');
@@ -1361,13 +1351,42 @@
     L.tearVisual(L.current(), p, packTop, packInner, { seamFill, seamGlow, dir: tearDir });
   }
 
+  function cancelHighlightAnim() {
+    highlightLock = false;
+    if (highlightRaf) cancelAnimationFrame(highlightRaf);
+    highlightRaf = 0;
+  }
+
+  function playHighlightThenOpen() {
+    if (tearDone || highlightLock) return;
+    highlightLock = true;
+    tearActive = false;
+    const start = tearProgress;
+    const dur = L.current().id === 'salon' ? 720 : 560;
+    const t0 = performance.now();
+    const tick = (now) => {
+      if (tearDone) return;
+      const t = Math.min(1, (now - t0) / dur);
+      const eased = t * t * (3 - 2 * t);
+      tearProgress = start + (1 - start) * eased;
+      setTearVisual(tearProgress);
+      if (t < 1) {
+        highlightRaf = requestAnimationFrame(tick);
+        return;
+      }
+      highlightLock = false;
+      completeTear();
+    };
+    highlightRaf = requestAnimationFrame(tick);
+  }
+
   function canOpenPack() {
     if (session && session.savedAt) { showLocked(); return false; }
     return true;
   }
 
   function onTearStart(e) {
-    if (tearDone || !views.pack.classList.contains('active') || !session) return;
+    if (tearDone || highlightLock || !views.pack.classList.contains('active') || !session) return;
     if (!canOpenPack()) return;
     hideTip();
     if (L.current().id === 'trace' && packTitleEl) packTitleEl.classList.add('fading');
@@ -1379,12 +1398,12 @@
     clearTimeout(holdTimer);
     const look = L.current();
     holdTimer = setTimeout(() => {
-      if (tearActive && tearProgress < 0.25) completeTear();
+      if (tearActive && !highlightLock && tearProgress < 0.25) playHighlightThenOpen();
     }, look.id === 'salon' ? 1600 : 1400);
     e.preventDefault();
   }
   function onTearMove(e) {
-    if (!tearActive || tearDone) return;
+    if (!tearActive || tearDone || highlightLock) return;
     const box = packSpin.getBoundingClientRect();
     const look = L.current();
     const next = L.tearDelta(look, tearStartX, tearStartY, e, box.width, box.height);
@@ -1396,20 +1415,23 @@
   function onTearEnd() {
     clearTimeout(holdTimer);
     clearInterval(holdTimer);
-    if (!tearActive || tearDone) return;
+    if (highlightLock || tearDone) return;
+    if (!tearActive) return;
     tearActive = false;
     if (tearProgress < 1) {
       tearProgress = 0;
-      packTop.style.transition = 'transform .35s ease';
-      if (seamFill) seamFill.style.transition = 'transform .35s ease';
+      if (seamFill) seamFill.style.transition = 'stroke-dashoffset .35s ease';
+      if (seamGlow) seamGlow.style.transition = 'stroke-dashoffset .35s ease';
       setTearVisual(0);
       setTimeout(() => {
-        packTop.style.transition = '';
         if (seamFill) seamFill.style.transition = '';
+        if (seamGlow) seamGlow.style.transition = '';
       }, 380);
       packSpin.classList.remove('tearing', 'spinning');
       packSpin.classList.add('idle');
       packInner.style.transform = '';
+      packTop.style.transform = '';
+      packTop.style.opacity = '';
       packTop.style.transformOrigin = '';
       if (packTitleEl) packTitleEl.classList.remove('fading');
     }
@@ -1427,6 +1449,7 @@
     if (tearDone) return;
     tearDone = true;
     tearActive = false;
+    cancelHighlightAnim();
     clearTimeout(holdTimer);
     clearInterval(holdTimer);
 
@@ -1468,6 +1491,7 @@
   }
 
   function resetPack() {
+    cancelHighlightAnim();
     tearDone = false;
     tearProgress = 0;
     tearDir = 'right';

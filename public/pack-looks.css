@@ -433,7 +433,6 @@ body.look-trace .trace-head {
   z-index: 10;
 }
 body.look-trace .pack-spin.tearing .trace-head { opacity: 1; }
-body.look-trace .pack-spin.tearing .pack-lid { opacity: 1; }
 
 body.look-trace .pouch-lip {
   display: block;

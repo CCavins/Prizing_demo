@@ -298,12 +298,13 @@
 
   function openTiming(id) {
     const look = id || current().id;
-    if (look === 'trace') return { rise: 320, opened: 1300, handoff: 1480 };
-    if (look === 'crimp') return { rise: 320, opened: 1300, handoff: 1550 };
-    if (look === 'salon') return { rise: 400, opened: 1600, handoff: 1900 };
+    /* rise starts with pouch drop (after lid separates); fade begins ~38% in */
+    if (look === 'trace') return { rise: 380, opened: 1550, handoff: 1750 };
+    if (look === 'crimp') return { rise: 380, opened: 1550, handoff: 1800 };
+    if (look === 'salon') return { rise: 480, opened: 1800, handoff: 2100 };
     if (look === 'vault') return { rise: 360, opened: 560, handoff: 1880 };
     if (look === 'case') return { rise: 400, opened: 600, handoff: 2000 };
-    return { rise: 320, opened: 1300, handoff: 1550 };
+    return { rise: 380, opened: 1550, handoff: 1800 };
   }
 
   function playFx(kind) {

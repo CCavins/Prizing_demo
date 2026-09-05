@@ -547,11 +547,11 @@
   .pack-inner { border-radius: 14px; box-shadow: 0 18px 44px rgba(0,0,0,.5); }
   .pack-back { box-shadow: 0 14px 40px rgba(0,0,0,.55); }
 
-  /* Cards stay behind the foil. Well top = tear mouth on the remaining pouch. */
+  /* Cards sit behind the pouch. Opaque pouch masks them; the tear mouth is the reveal. */
   .pack-well {
     position: absolute;
     left: 10%; right: 10%;
-    top: calc(var(--tear-origin-y, 9.6%) + 1.2%);
+    top: calc(var(--tear-origin-y, 9.6%) + 0.4%);
     bottom: 7%;
     overflow: hidden;
     z-index: 1;
@@ -564,8 +564,8 @@
     visibility: visible;
     overflow: visible;
     z-index: 3;
-    /* Exit plane = torn lip of the remaining pouch */
-    clip-path: inset(-180% -40% 100% -40%);
+    /* Allow the card above the mouth; only block leaking under the pouch */
+    clip-path: inset(-260% -45% 10% -45%);
   }
   .pack-cards {
     position: absolute;
@@ -576,29 +576,34 @@
     left: 50%; top: 50%;
     --cardw: calc(var(--packw) * .7744);
     width: 96%;
-    /* Tip sits under the tear; body stays in the pouch */
-    transform: translate(-50%, 32%) scale(.9);
+    /* Buried behind the remaining pouch body */
+    transform: translate(-50%, 42%) scale(.9);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
   .pack-cards .tcard.rise {
-    transition: transform .95s cubic-bezier(.22,.78,.22,1);
-    /* Stop at the mouth — half out the cut, not flying above the pack */
-    transform: translate(-50%, -52%) scale(1.02);
+    transition: transform 1.05s cubic-bezier(.2,.75,.2,1);
+    /* Rises out the tear; pouch fade reveals the rest */
+    transform: translate(-50%, -48%) scale(1.02);
   }
 
-  /* Pouch holds still at the tear while the card exits, then fades in place */
+  /*
+    After the lid separates:
+    1) pouch slides down, card slides up out of the tear
+    2) once ~15–20% of the card is clear of the mouth, pouch fades out
+  */
   .pack-spin.opening .pack-inner {
-    animation: packFadeOut .9s .55s cubic-bezier(.22,.7,.2,1) forwards;
+    animation: packDrawDown 1.05s .38s cubic-bezier(.22,.7,.2,1) forwards;
   }
   .pack-spin.opened .pack-inner {
-    transition: opacity .35s ease;
+    transition: opacity .3s ease;
     opacity: 0;
+    transform: translateY(32%) scale(.97);
   }
-  @keyframes packFadeOut {
-    0% { transform: none; opacity: 1; }
-    55% { transform: none; opacity: 1; }
-    100% { transform: none; opacity: 0; }
+  @keyframes packDrawDown {
+    0%   { transform: translateY(0) scale(1); opacity: 1; }
+    38%  { transform: translateY(16%) scale(.99); opacity: 1; }
+    100% { transform: translateY(32%) scale(.97); opacity: 0; }
   }
   .pack-spin.opening .pack-front,
   .pack-spin.opened .pack-front {

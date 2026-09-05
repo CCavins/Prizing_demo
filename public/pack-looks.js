@@ -7,9 +7,9 @@
       id: 'trace',
       name: 'Trace',
       tag: 'Pocket-style open',
-      how: 'Trace the glowing line left to right. The print splits on that line — the top strip flies off, and the card is drawn out of the pouch.',
-      open: 'Pink energy trail. The face cuts on the rip, then the top strip lifts up and right.',
-      out: 'Body stays a hollow pouch. Card comes out the mouth toward you as the wrapper drops and fades.',
+      how: 'Trace the glowing line left to right. The header peels off the still-whole pack, and the card is drawn out of the mouth.',
+      open: 'Pink energy trail. White snap. The crimp strip lifts up and right — the printed pouch stays one piece.',
+      out: 'Card comes out the mouth toward you as the wrapper drops and fades.',
       through: 'One large card on a light field. Swipe left for the next. Soft foil sheen on each flip.',
       prize: 'A pale halo and a short haptic — no confetti rain.',
       tip: 'Trace the line<br>left to right',
@@ -248,7 +248,7 @@
 
   function openTiming(id) {
     const look = id || current().id;
-    if (look === 'trace') return { rise: 480, opened: 1180, handoff: 2280 };
+    if (look === 'trace') return { rise: 40, opened: 580, handoff: 1400 };
     if (look === 'salon') return { rise: 520, opened: 1300, handoff: 2500 };
     if (look === 'vault') return { rise: 300, opened: 920, handoff: 1980 };
     if (look === 'case') return { rise: 400, opened: 1100, handoff: 2200 };

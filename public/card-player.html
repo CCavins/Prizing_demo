@@ -198,31 +198,26 @@
     color: rgba(20,30,45,.18);
   }
 
-  /* Dark cavity you look into once the top tears off */
+  /* Interior stays behind the foil. The face splits on the tear line. */
   .pack-mouth {
     position: absolute;
-    top: 7.4%; left: 3%; right: 3%;
-    height: 13%;
-    border-radius: 0 0 10px 10px;
+    top: 8.8%; left: 0; right: 0;
+    height: 10%;
+    border-radius: 0;
     z-index: 1;
-    opacity: 0;
     background:
-      radial-gradient(70% 90% at 50% 0%, rgba(255,255,255,.1), transparent 46%),
-      linear-gradient(180deg, #2a3344 0%, #0b0f16 38%, #151c28 100%);
-    box-shadow:
-      inset 0 10px 18px rgba(0,0,0,.55),
-      inset 0 -8px 14px rgba(0,0,0,.4);
+      radial-gradient(70% 80% at 50% 100%, rgba(255,255,255,.06), transparent 55%),
+      linear-gradient(180deg, #070b10 0%, #141b26 100%);
   }
 
-  /* Torn-off top is a real strip — never a full-pack gray square over the card */
+  /* Header strip only — the printed pouch stays one piece */
   .pack-lid {
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 13.2%;
+    height: 11.4%;
     z-index: 6;
-    transform-origin: 50% 100%;
+    transform-origin: 14% 100%;
     transform-style: preserve-3d;
-    overflow: visible;
     border-radius: 14px 14px 0 0;
     opacity: 0;
     pointer-events: none;
@@ -233,6 +228,10 @@
     position: absolute; inset: 0;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    border-radius: 14px 14px 0 0;
+  }
+  .pack-lid .pd-crimp-top {
+    height: 100%;
     border-radius: 14px 14px 0 0;
   }
   .lid-front {
@@ -247,10 +246,10 @@
     animation: foilSweep 3.2s ease-in-out infinite;
   }
   .lid-back {
-    transform: rotateX(180deg) translateZ(1px);
+    transform: rotateX(180deg);
     background:
-      linear-gradient(180deg, #3a4558 0%, #1a222e 42%, #0c1016 100%);
-    box-shadow: inset 0 0 18px rgba(0,0,0,.5);
+      linear-gradient(180deg, #2c3546 0%, #121820 70%, #0c1016 100%);
+    box-shadow: inset 0 0 22px rgba(0,0,0,.45);
   }
   .lid-back::after {
     content: '';
@@ -295,100 +294,37 @@
   .pack-spin.opened .pack-seam,
   .pack-spin.opening .trace-head,
   .pack-spin.opened .trace-head,
-  .pack-spin.opening .tear-flash,
   .pack-spin.opened .tear-flash {
     opacity: 0;
     visibility: hidden;
     transition: none;
     pointer-events: none;
   }
-  /* Split only after the highlight commits — never while pressing or tracing. */
+  /* Split only after the highlight commits. The pouch face stays whole;
+     only the header strip leaves, so nothing punches a hole in the pack. */
   .pack-spin.opening .lid-front {
-    box-shadow: 0 10px 16px rgba(0,0,0,.28);
+    box-shadow: 0 10px 18px rgba(0,0,0,.28);
   }
-  .pack-spin.opening .pack-lid,
-  .pack-spin.opened .pack-lid {
-    clip-path: polygon(0% 0%, 100% 0%, 100% 88%, 68% 100%, 32% 86%, 0% 94%);
+  .pack-spin.opening .lid-front,
+  .pack-spin.opened .lid-front,
+  .pack-spin.opening .lid-back,
+  .pack-spin.opened .lid-back {
+    clip-path: polygon(0 0, 100% 0, 100% 80%, 88% 100%, 72% 78%, 54% 98%, 36% 80%, 18% 96%, 0 82%);
   }
-  /* Clip the printed body only — not the transforming wrapper — so a rotate
-     cannot drop the clip and flash a gray rectangle over the card. */
   .pack-spin.opening .pack-inner,
   .pack-spin.opened .pack-inner {
     background: transparent;
-    box-shadow: none;
-    transform-style: flat;
-    overflow: hidden;
-    border-radius: 0 0 14px 14px;
+    overflow: visible;
   }
-  .pack-spin.opening .pack-back,
-  .pack-spin.opened .pack-back {
-    visibility: hidden;
-    opacity: 0;
-    box-shadow: none;
-  }
-  .pack-spin.opening .pack-front,
-  .pack-spin.opened .pack-front {
-    border-radius: 0;
-    background: none;
-  }
-  .pack-spin.opening .pack-inner .pack-body,
-  .pack-spin.opened .pack-inner .pack-body {
-    clip-path: var(--tear-body);
-    border-radius: 0 0 14px 14px;
-    box-shadow: none;
-  }
-  .pack-cavity {
-    position: absolute;
-    left: 5%; right: 5%;
-    top: 8.6%;
-    height: 22px;
-    z-index: 4;
-    pointer-events: none;
-    opacity: 0;
-    border-radius: 3px;
-    background:
-      radial-gradient(90% 80% at 50% 0%, rgba(255,255,255,.14), transparent 55%),
-      linear-gradient(180deg, #3d4a5c 0%, #0a0d12 42%, #161d28 100%);
-    box-shadow:
-      inset 0 6px 10px rgba(0,0,0,.55),
-      inset 0 -3px 6px rgba(0,0,0,.35),
-      0 1px 0 rgba(255,255,255,.18);
-  }
-  .pack-spin.opening .pack-cavity { opacity: 1; }
-  .pack-spin.opened .pack-cavity { opacity: 0; }
-  .pack-spin.opening .pack-mouth {
-    opacity: 1;
-    visibility: visible;
-  }
-  .pack-spin.opened .pack-mouth {
-    opacity: 0;
-    visibility: hidden;
-  }
-  .pouch-lip {
-    position: absolute;
-    left: 4%; right: 4%;
-    top: 9%;
-    height: 9px;
-    z-index: 3;
-    pointer-events: none;
-    opacity: 0;
-    border-radius: 2px;
-    background: linear-gradient(180deg, rgba(18, 22, 30, .7), rgba(18, 22, 30, 0));
-    box-shadow: 0 2px 6px rgba(0,0,0,.35);
-  }
-  .pack-spin.opening .pouch-lip {
-    display: block;
-    opacity: 1;
-    visibility: visible;
-  }
+  .pack-spin.opening .pack-mouth,
+  .pack-spin.opened .pack-mouth,
+  .pack-spin.opening .pouch-lip,
   .pack-spin.opened .pouch-lip {
     opacity: 0;
     visibility: hidden;
   }
   .pack-spin.opening .pack-inner .pd-crimp-top,
-  .pack-spin.opened .pack-inner .pd-crimp-top,
-  .pack-spin.opening .pb-crimp-top,
-  .pack-spin.opened .pb-crimp-top { opacity: 0; }
+  .pack-spin.opened .pack-inner .pd-crimp-top { opacity: 0; }
 
   /* Unifies lid + body into one sealed wrapper while closed */
   .pack-wrap-sheen {
@@ -425,7 +361,7 @@
     transition: opacity .2s;
   }
   .pack-spin.opening .pack-body::before,
-  .pack-spin.opened .pack-body::before { opacity: 1; }
+  .pack-spin.opened .pack-body::before { opacity: 0; }
   /* facet print pattern */
   .pack-body .pd-facets {
     position: absolute; inset: 0;
@@ -608,15 +544,19 @@
     transform: translate(-50%, -58%);
   }
 
-  /* Top comes off first; then the pack lowers as the card is drawn out */
+  /* Pouch stays put while the header peels; then it eases down with the card */
   .pack-spin.opening .pack-inner {
-    transition: transform 1.15s .42s cubic-bezier(.22,.7,.2,1);
-    transform: translateY(30%) scale(.97);
+    animation: packDrop 1.05s .62s cubic-bezier(.22,.7,.2,1) forwards;
+    transform: none;
   }
   .pack-spin.opened .pack-inner {
+    animation: none;
     transition: transform .85s cubic-bezier(.3,.2,.2,1), opacity .65s ease;
     transform: translateY(48%) scale(.92);
     opacity: 0;
+  }
+  @keyframes packDrop {
+    to { transform: translateY(22%) scale(.97); }
   }
   .pack-spin.opening .pack-front,
   .pack-spin.opened .pack-front {
@@ -625,14 +565,12 @@
   }
 
   .pack-lid.flyoff {
-    transition: transform 1.05s cubic-bezier(.16,.78,.2,1), opacity .16s .62s ease;
-    transform: translateY(-90%) rotateX(-46deg) !important;
+    transition: transform .85s cubic-bezier(.18,.72,.2,1), opacity .4s .38s ease;
+    transform: translateY(-22%) rotateX(-52deg);
     pointer-events: none;
   }
-  .pack-spin.opening .pack-lid.flyoff,
-  .pack-spin.opened .pack-lid.flyoff {
-    opacity: 0;
-  }
+  .pack-spin.opening .pack-lid.flyoff { opacity: 1; }
+  .pack-spin.opened .pack-lid.flyoff { opacity: 0; }
 
   .swipe-cue {
     margin-top: 4px;
@@ -1141,7 +1079,6 @@
       </div>
       <div class="trace-head" id="traceHead" aria-hidden="true"></div>
       <div class="tear-flash" id="tearFlash" aria-hidden="true"></div>
-      <div class="pack-cavity" aria-hidden="true"></div>
       <div class="pack-lid" id="packTop">
         <div class="lid-front foil-mat">
           <div class="pd-crimp-top"></div>
@@ -1545,12 +1482,15 @@
     packInner.style.transform = '';
     packSpin.classList.remove('tearing', 'spinning');
     packSpin.classList.add('opening');
+    if (tearFlash && L.current().id === 'trace') {
+      tearFlash.classList.remove('on');
+      void tearFlash.offsetWidth;
+      tearFlash.classList.add('on');
+    }
     packTop.style.opacity = '1';
-    packTop.style.transform = 'rotateX(-32deg) translateY(-6%)';
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         packTop.style.opacity = '';
-        packTop.style.transform = '';
         packTop.classList.add('flyoff');
       });
     });
@@ -1560,9 +1500,12 @@
     packCardsEl.innerHTML = '';
     const peek = D.renderCard(currentPackCards[0]);
     packCardsEl.appendChild(peek);
-    setTimeout(() => {
-      requestAnimationFrame(() => peek.classList.add('rise'));
-    }, timing.rise);
+    const kickRise = () => peek.classList.add('rise');
+    if (timing.rise <= 0) {
+      requestAnimationFrame(() => requestAnimationFrame(kickRise));
+    } else {
+      setTimeout(() => requestAnimationFrame(kickRise), timing.rise);
+    }
 
     setTimeout(() => packSpin.classList.add('opened'), timing.opened);
     setTimeout(() => {

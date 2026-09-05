@@ -131,12 +131,12 @@ body.look-salon .pack-well { top: 11%; }
 
 /* Crimp — snack-pack flap hinges back on the rip */
 body.look-crimp .pack-lid.flyoff {
-  transition: transform 1s cubic-bezier(.18,.7,.2,1), opacity .16s .58s ease;
-  transform: translateY(-90%) rotateX(-46deg) !important;
+  transition: transform .95s cubic-bezier(.18,.7,.2,1), opacity .4s .38s ease;
+  transform: translateY(-24%) rotateX(-58deg);
 }
 body.look-crimp .pack-spin.opening .pack-inner {
-  transition: transform 1.2s .4s cubic-bezier(.22,.7,.2,1);
-  transform: translateY(28%) scale(.97);
+  animation: packDrop 1.1s .62s cubic-bezier(.22,.7,.2,1) forwards;
+  transform: none;
 }
 body.look-crimp .seam-idle-path {
   stroke: rgba(255, 210, 140, .7);
@@ -150,8 +150,8 @@ body.look-crimp .seam-fill-path {
 
 /* Case — lid cracks aside; pack tips and empties */
 body.look-case .pack-lid.flyoff {
-  transition: transform .9s cubic-bezier(.22,.8,.2,1), opacity .16s .52s ease;
-  transform: translate(28%, -170%) rotate(16deg) !important;
+  transition: transform .9s cubic-bezier(.22,.8,.2,1), opacity .4s .32s ease;
+  transform: translate(12%, -16%) rotate(16deg) !important;
 }
 body.look-case .pack-spin.opening .pack-inner {
   transition: transform 1.15s .42s cubic-bezier(.28,.6,.2,1);
@@ -178,8 +178,8 @@ body.look-case .seam-fill-path {
 
 /* Vault — lid launches; pack sinks and shrinks; card blooms */
 body.look-vault .pack-lid.flyoff {
-  transition: transform .85s cubic-bezier(.18,.85,.18,1), opacity .14s .48s ease;
-  transform: translateY(-280%) scale(.94) !important;
+  transition: transform .85s cubic-bezier(.18,.85,.18,1), opacity .35s .28s ease;
+  transform: translateY(-38%) scale(.94) !important;
 }
 body.look-vault .pack-spin.opening .pack-inner {
   transition: transform 1.1s .4s cubic-bezier(.2,.75,.2,1);
@@ -207,12 +207,12 @@ body.look-vault .seam-fill-path {
 
 /* Salon — quiet peel; pack eases down; card is presented late */
 body.look-salon .pack-lid.flyoff {
-  transition: transform 1.35s cubic-bezier(.42,.16,.2,1), opacity .2s .85s ease;
-  transform: translateY(-130%) rotate(-3deg) !important;
+  transition: transform 1.2s cubic-bezier(.42,.16,.2,1), opacity .5s .42s ease;
+  transform: translateY(-16%) rotateX(-36deg) rotate(-2deg);
 }
 body.look-salon .pack-spin.opening .pack-inner {
-  transition: transform 1.35s .5s cubic-bezier(.36,.2,.2,1);
-  transform: translateY(20%) scale(.98);
+  animation: packDrop 1.25s .7s cubic-bezier(.36,.2,.2,1) forwards;
+  transform: none;
 }
 body.look-salon .pack-spin.opened .pack-inner {
   transform: translateY(36%) scale(.96);
@@ -388,10 +388,7 @@ body.look-trace .pack-spin.spinning {
 body.look-trace .pack-inner {
   box-shadow: 0 22px 48px rgba(70, 100, 130, .26);
 }
-body.look-trace .pack-lid {
-  top: 0; left: 0; right: 0;
-  height: 13.2%;
-}
+body.look-trace .pack-lid { height: 11.4%; }
 body.look-trace .pack-mouth { top: 8.8%; height: 10%; }
 body.look-trace .pack-seam { top: 7.2%; height: 26px; }
 body.look-trace .seam-idle-path {
@@ -452,17 +449,9 @@ body.look-trace .pouch-lip {
   opacity: 0;
   pointer-events: none;
 }
-body.look-trace .pack-spin.opening .pouch-lip {
-  display: block;
-  opacity: 1;
-  visibility: visible;
-}
+body.look-trace .pack-spin.opening .pouch-lip,
 body.look-trace .pack-spin.opened .pouch-lip { opacity: 0; visibility: hidden; }
-body.look-trace .pack-mouth {
-  background:
-    radial-gradient(70% 90% at 50% 0%, rgba(255,255,255,.12), transparent 46%),
-    linear-gradient(180deg, #3a4658 0%, #121820 40%, #1a2433 100%);
-}
+body.look-trace .pack-mouth { background: none; }
 
 body.look-trace .rip-edge,
 body.look-trace .lid-rip {
@@ -470,51 +459,63 @@ body.look-trace .lid-rip {
   position: absolute;
   left: 0;
   right: 0;
-  height: 10px;
+  height: 12px;
   pointer-events: none;
   opacity: 0;
-  background: linear-gradient(90deg, #7ef0ff, #fff 40%, #ff6ad5 78%, #ffe29a);
-  box-shadow: 0 0 10px rgba(126, 240, 255, .85), 0 0 18px rgba(255, 106, 213, .45);
+  background: linear-gradient(90deg, #7ef0ff, #ffe29a 28%, #fff 50%, #ff6ad5 78%, #7ef0ff);
+  box-shadow: 0 0 12px rgba(126, 240, 255, .95), 0 0 20px rgba(255, 106, 213, .55), 0 0 8px #ffe29a;
 }
 body.look-trace .lid-rip { bottom: 0; }
 body.look-trace .rip-edge { top: 0; z-index: 9; }
 body.look-trace .pack-spin.opening .rip-edge,
-body.look-trace .pack-spin.opening .lid-rip,
+body.look-trace .pack-spin.opening .lid-rip { opacity: .95; }
 body.look-trace .pack-spin.opened .rip-edge,
 body.look-trace .pack-spin.opened .lid-rip { opacity: 0; visibility: hidden; }
 
 body.look-trace .tear-flash {
   display: block;
   position: absolute;
-  left: 2%;
-  right: 2%;
-  top: 8%;
-  height: 16px;
+  left: -4%;
+  right: -4%;
+  top: 7.2%;
+  height: 22px;
   z-index: 14;
   pointer-events: none;
-  border-radius: 8px;
-  background: linear-gradient(90deg, transparent, #fff 30%, #fff 70%, transparent);
-  box-shadow: 0 0 18px #fff, 0 0 28px rgba(126, 240, 255, .7), 0 0 22px rgba(255, 106, 213, .45);
+  border-radius: 10px;
+  background: linear-gradient(90deg, transparent, #7ef0ff 16%, #fff 40%, #ff6ad5 58%, #fff 78%, transparent);
+  box-shadow:
+    0 0 22px #fff,
+    0 0 36px rgba(126, 240, 255, .85),
+    0 0 28px rgba(255, 106, 213, .55),
+    0 -8px 18px rgba(126, 240, 255, .28),
+    0 8px 18px rgba(255, 106, 213, .22);
   opacity: 0;
 }
-body.look-trace .tear-flash.on { animation: tearSnap .22s ease-out forwards; }
+body.look-trace .tear-flash.on { animation: tearSnap .28s ease-out forwards; }
 @keyframes tearSnap {
-  0% { opacity: 0; transform: scaleX(.2); }
-  35% { opacity: 1; transform: scaleX(1); }
-  100% { opacity: 0; transform: scaleX(1.04); }
+  0% { opacity: 0; transform: scaleX(.18); }
+  22% { opacity: 1; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1.08); }
 }
 
+/* Flush → left peel → toss up-right, like the Pocket recording */
+body.look-trace .pack-lid { transform-origin: 12% 100%; }
 body.look-trace .pack-lid.flyoff {
-  transition: transform 1.15s cubic-bezier(.18, .72, .2, 1), opacity .16s .7s ease;
-  transform: translate3d(22%, -260%, 48px) rotateZ(16deg) rotateX(-34deg) !important;
+  animation: pocketLid .7s cubic-bezier(.18, .72, .22, 1) forwards;
+  transition: opacity .36s .34s ease;
   pointer-events: none;
+}
+@keyframes pocketLid {
+  0% { transform: none; }
+  16% { transform: rotateX(-30deg) rotateZ(-3deg) translate3d(0, -8%, 10px); }
+  100% { transform: translate3d(18%, -170%, 34px) rotateZ(18deg) rotateX(-20deg); }
 }
 body.look-trace .pack-spin.opening .pack-lid.flyoff { opacity: 1; }
 body.look-trace .pack-spin.opened .pack-lid.flyoff { opacity: 0; }
 
 body.look-trace .pack-spin.opening .pack-inner {
-  transition: transform 1.25s .48s cubic-bezier(.28, .55, .2, 1);
-  transform: translateY(16%) scale(.985);
+  animation: packDrop 1.05s .7s cubic-bezier(.28, .55, .2, 1) forwards;
+  transform: none;
 }
 body.look-trace .pack-spin.opened .pack-inner {
   transition: transform .9s cubic-bezier(.3, .2, .2, 1), opacity .65s ease;
@@ -527,11 +528,11 @@ body.look-trace .pack-spin.opening .pack-front {
 body.look-trace .pack-well { top: 11%; }
 body.look-trace .pack-cards .tcard {
   --cardw: calc(var(--packw) * .82);
-  transform: translate(-50%, 78%) scale(.86);
+  transform: translate(-50%, 68%) scale(.88);
 }
 body.look-trace .pack-cards .tcard.rise {
-  transform: translate(-50%, -70%) scale(1.04);
-  transition: transform 1.15s cubic-bezier(.16, .84, .22, 1);
+  transform: translate(-50%, -70%) scale(1.05);
+  transition: transform .78s cubic-bezier(.16, .84, .22, 1);
 }
 
 body.look-trace .packs-left { color: #8a97a6; }

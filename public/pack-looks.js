@@ -19,9 +19,9 @@
       id: 'crimp',
       name: 'Crimp',
       tag: 'The foil snack pack',
-      how: 'Swipe the gold seal left to right. The foil face splits on the rip; the flap hinges back; the pack lowers.',
-      open: 'Gold line. Print cuts once. The crimped flap peels like a snack pack.',
-      out: 'Card slides out of the open mouth as the wrapper sinks.',
+      how: 'Swipe the gold seal left to right. The header peels off the still-whole pack, and the card is drawn out of the mouth.',
+      open: 'Gold line. White snap. The crimp strip lifts — the printed pouch stays one piece.',
+      out: 'Card comes out the mouth toward you as the wrapper drops and fades.',
       through: 'Swipe left. Next cards land face-down, then flip. Peek stack on the right.',
       prize: 'Warm gold burst + a short haptic.',
       tip: 'Swipe right across the seal<br>to open your pack',
@@ -55,9 +55,9 @@
       id: 'salon',
       name: 'Salon',
       tag: 'A slow presentation',
-      how: 'A long left-to-right swipe. The print splits quietly; the pack eases down; the card is presented.',
-      open: 'Quiet peel. Face cuts once. The strip lifts a little — nothing is thrown.',
-      out: 'Card rises a beat after the pack begins to drop.',
+      how: 'A long left-to-right swipe. The header peels quietly off the still-whole pack, and the card is presented from the mouth.',
+      open: 'Quiet gold line. The strip lifts and eases away — nothing is thrown.',
+      out: 'Card rises from the mouth as the wrapper eases down and fades.',
       through: 'Longer flips. Side-slide exits. Spotlight + glare on each card.',
       prize: 'A vignette, a gold ring, and the foil crawl — almost no particles.',
       tip: 'Slowly swipe right<br>to present the cards',
@@ -165,12 +165,53 @@
     const edge = pts.slice(0, -2);
     return 'polygon(0% 0%, 100% 0%, ' + edge.slice().reverse().join(', ') + ')';
   }
+  /* Short lid uses local % — map pack-space tear Y into the 11.4% strip */
+  function lidClipLocal(body, lidH) {
+    lidH = lidH || 11.4;
+    const raw = String(body).replace(/^polygon\(/i, '').replace(/\)$/, '');
+    const pts = raw.split(',').map(function (p) { return p.trim(); }).filter(Boolean);
+    const edge = pts.slice(0, -2);
+    const mapped = edge.map(function (p) {
+      const parts = p.split(/\s+/);
+      const y = parseFloat(parts[1]);
+      const ly = Math.max(0, Math.min(100, (y / lidH) * 100));
+      return parts[0] + ' ' + ly.toFixed(1) + '%';
+    });
+    return 'polygon(0% 0%, 100% 0%, ' + mapped.slice().reverse().join(', ') + ')';
+  }
   function tearOriginY(body) {
     const raw = String(body).replace(/^polygon\(/i, '').replace(/\)$/, '');
     const pts = raw.split(',').map(function (p) { return p.trim(); }).slice(0, -2);
     const ys = pts.map(function (p) { return parseFloat(p.split(/\s+/)[1]); }).filter(function (n) { return !isNaN(n); });
     if (!ys.length) return '10%';
     return (ys.reduce(function (a, b) { return a + b; }, 0) / ys.length).toFixed(1) + '%';
+  }
+  function lidTearY(body, lidH) {
+    lidH = lidH || 11.4;
+    const y = parseFloat(tearOriginY(body));
+    if (isNaN(y) || !lidH) return '83%';
+    return Math.max(8, Math.min(98, (y / lidH) * 100)).toFixed(1) + '%';
+  }
+  /* Band on the lid side of the tear (upward), so it never paints over the pouch */
+  function lidLipClip(body, lidH, depth) {
+    lidH = lidH || 11.4;
+    depth = depth == null ? 16 : depth;
+    const raw = String(body).replace(/^polygon\(/i, '').replace(/\)$/, '');
+    const pts = raw.split(',').map(function (p) { return p.trim(); }).filter(Boolean);
+    const edge = pts.slice(0, -2);
+    const mapped = edge.map(function (p) {
+      const parts = p.split(/\s+/);
+      const y = parseFloat(parts[1]);
+      const ly = lidH === 100 ? y : Math.max(0, Math.min(100, (y / lidH) * 100));
+      return { x: parts[0], y: ly, yRaw: parts[1] };
+    });
+    const inward = mapped.map(function (p) {
+      return p.x + ' ' + Math.max(0, p.y - depth).toFixed(2) + '%';
+    });
+    const along = mapped.slice().reverse().map(function (p) {
+      return p.x + ' ' + (lidH === 100 ? p.yRaw : p.y.toFixed(2) + '%');
+    });
+    return 'polygon(' + inward.concat(along).join(', ') + ')';
   }
 
   const TEARS = [
@@ -181,7 +222,14 @@
     },
   ];
 
-  const TRACE_TEARS = TEARS;
+  /* Trace: one gentle dip, then a rise — not a ruler, not teeth */
+  const TRACE_TEARS = [
+    {
+      id: 'trace-soft',
+      d: 'M0 4.6 C22 2.6 34 10.8 44 10.4 C62 9.6 74 3.4 100 4.2',
+      body: 'polygon(0.0% 8.75%, 5.6% 8.55%, 10.3% 8.39%, 14.5% 8.26%, 18.4% 8.18%, 22.0% 8.15%, 25.6% 8.50%, 29.5% 9.31%, 33.7% 10.25%, 38.4% 10.97%, 44.0% 11.15%, 48.3% 10.82%, 52.8% 10.29%, 58.3% 9.67%, 65.2% 9.07%, 74.0% 8.62%, 85.5% 8.40%, 100.0% 8.55%, 100% 100%, 0% 100%)',
+    },
+  ];
 
   let tearLen = 0;
   let tearVariant = TEARS[0];
@@ -198,6 +246,8 @@
     if (glow) glow.setAttribute('d', variant.d);
     pack.style.setProperty('--tear-body', variant.body);
     pack.style.setProperty('--tear-lid', lidClipFromBody(variant.body));
+    pack.style.setProperty('--lid-tear-y', tearOriginY(variant.body));
+    pack.style.setProperty('--tear-lid-lip', lidLipClip(variant.body, 100, 1.85));
     pack.style.setProperty('--tear-origin-y', tearOriginY(variant.body));
     pack.style.setProperty('--tear-p', '0');
     try {
@@ -214,7 +264,7 @@
   }
 
   function pickTear() {
-    applyTear(TEARS[0]);
+    applyTear(TRACE_TEARS[0]);
   }
 
   function tearDelta(look, startX, startY, e, w, h) {
@@ -248,11 +298,12 @@
 
   function openTiming(id) {
     const look = id || current().id;
-    if (look === 'trace') return { rise: 40, opened: 580, handoff: 1400 };
-    if (look === 'salon') return { rise: 520, opened: 1300, handoff: 2500 };
-    if (look === 'vault') return { rise: 300, opened: 920, handoff: 1980 };
-    if (look === 'case') return { rise: 400, opened: 1100, handoff: 2200 };
-    return { rise: 380, opened: 1080, handoff: 2180 };
+    if (look === 'trace') return { rise: 420, opened: 1360, handoff: 1480 };
+    if (look === 'crimp') return { rise: 420, opened: 1360, handoff: 1600 };
+    if (look === 'salon') return { rise: 520, opened: 1700, handoff: 2100 };
+    if (look === 'vault') return { rise: 360, opened: 560, handoff: 1880 };
+    if (look === 'case') return { rise: 400, opened: 600, handoff: 2000 };
+    return { rise: 400, opened: 600, handoff: 1980 };
   }
 
   function playFx(kind) {

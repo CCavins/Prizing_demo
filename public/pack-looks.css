@@ -129,14 +129,66 @@ body.look-case .pack-well,
 body.look-vault .pack-well,
 body.look-salon .pack-well { top: 11%; }
 
-/* Crimp — snack-pack flap hinges back on the rip */
-body.look-crimp .pack-lid.flyoff {
-  transition: transform .95s cubic-bezier(.18,.7,.2,1), opacity .4s .38s ease;
-  transform: translateY(-24%) rotateX(-58deg);
+/* Matching tear + header peel — same rip as Trace, look-specific highlight */
+body.look-crimp .pack-lid,
+body.look-salon .pack-lid {
+  inset: 0;
+  height: auto;
+  transform-origin: 12% var(--lid-tear-y, 9.2%);
 }
+body.look-crimp .pack-lid .pd-crimp-top,
+body.look-salon .pack-lid .pd-crimp-top { height: 8%; }
+body.look-crimp .pouch-lip,
+body.look-salon .pouch-lip { display: none; }
+body.look-crimp .pack-mouth,
+body.look-salon .pack-mouth { background: none; }
+body.look-crimp .lid-open,
+body.look-salon .lid-open {
+  transform: rotateX(48deg) translateZ(3px);
+  transform-origin: 50% var(--lid-tear-y, 9.2%);
+}
+body.look-crimp .lid-open { background: #5c5346; }
+body.look-salon .lid-open { background: #4a4e54; }
+body.look-crimp .pack-spin.opening .pack-lid.flyoff .lid-open,
+body.look-crimp .pack-spin.opened .pack-lid.flyoff .lid-open,
+body.look-salon .pack-spin.opening .pack-lid.flyoff .lid-open,
+body.look-salon .pack-spin.opened .pack-lid.flyoff .lid-open {
+  display: block;
+}
+
+/* Crimp — gold seal, snack-pack hinge, same matching rip */
+body.look-crimp .pack-lid.flyoff {
+  animation: crimpLid .75s cubic-bezier(.18, .72, .22, 1) forwards;
+  transition: none;
+  pointer-events: none;
+}
+@keyframes crimpLid {
+  0% { transform: none; opacity: 1; }
+  20% { transform: rotateX(-62deg) rotateZ(-1deg) translate3d(0, -1%, 14px); opacity: 1; }
+  65% { opacity: 1; }
+  100% { transform: translate3d(8%, -18%, 36px) rotateZ(10deg) rotateX(-44deg); opacity: 0; }
+}
+body.look-crimp .pack-spin.opening .pack-lid.flyoff { opacity: 1; }
+body.look-crimp .pack-spin.opened .pack-lid.flyoff { opacity: 0; }
 body.look-crimp .pack-spin.opening .pack-inner {
-  animation: packDrop 1.1s .62s cubic-bezier(.22,.7,.2,1) forwards;
-  transform: none;
+  animation: packDropCrimp .9s .42s cubic-bezier(.22, .7, .2, 1) forwards;
+}
+body.look-crimp .pack-spin.opened .pack-inner {
+  transition: none;
+  opacity: 0;
+  transform: translateY(32%) scale(.97);
+}
+@keyframes packDropCrimp {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  18% { opacity: 1; }
+  100% { transform: translateY(32%) scale(.97); opacity: 0; }
+}
+body.look-crimp .pack-cards .tcard {
+  transform: translate(-50%, 22%) scale(.9);
+}
+body.look-crimp .pack-cards .tcard.rise {
+  transform: translate(-50%, -68%) scale(1.04);
+  transition: transform .9s cubic-bezier(.22, .7, .2, 1);
 }
 body.look-crimp .seam-idle-path {
   stroke: rgba(255, 210, 140, .7);
@@ -205,26 +257,39 @@ body.look-vault .seam-fill-path {
   filter: drop-shadow(0 0 4px rgba(180, 210, 255, .75));
 }
 
-/* Salon — quiet peel; pack eases down; card is presented late */
+/* Salon — quiet gold line; slower peel; same matching rip */
 body.look-salon .pack-lid.flyoff {
-  transition: transform 1.2s cubic-bezier(.42,.16,.2,1), opacity .5s .42s ease;
-  transform: translateY(-16%) rotateX(-36deg) rotate(-2deg);
+  animation: salonLid 1.05s cubic-bezier(.36, .2, .2, 1) forwards;
+  transition: none;
+  pointer-events: none;
 }
+@keyframes salonLid {
+  0% { transform: none; opacity: 1; }
+  18% { transform: rotateX(-56deg) rotateZ(-1deg) translate3d(0, -1%, 16px); opacity: 1; }
+  72% { opacity: 1; }
+  100% { transform: translate3d(6%, -14%, 28px) rotateZ(6deg) rotateX(-32deg); opacity: 0; }
+}
+body.look-salon .pack-spin.opening .pack-lid.flyoff { opacity: 1; }
+body.look-salon .pack-spin.opened .pack-lid.flyoff { opacity: 0; }
 body.look-salon .pack-spin.opening .pack-inner {
-  animation: packDrop 1.25s .7s cubic-bezier(.36,.2,.2,1) forwards;
-  transform: none;
+  animation: packDropSalonOpen 1.15s .52s cubic-bezier(.36, .2, .2, 1) forwards;
 }
 body.look-salon .pack-spin.opened .pack-inner {
-  transform: translateY(36%) scale(.96);
+  transition: none;
   opacity: 0;
-  transition-duration: .9s;
+  transform: translateY(28%) scale(.98);
+}
+@keyframes packDropSalonOpen {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  22% { opacity: 1; }
+  100% { transform: translateY(28%) scale(.98); opacity: 0; }
 }
 body.look-salon .pack-cards .tcard {
-  transform: translate(-50%, 46%);
+  transform: translate(-50%, 26%) scale(.9);
 }
 body.look-salon .pack-cards .tcard.rise {
-  transform: translate(-50%, -50%);
-  transition: transform 1.35s .16s cubic-bezier(.22,.7,.2,1);
+  transform: translate(-50%, -62%) scale(1.02);
+  transition: transform 1.15s .08s cubic-bezier(.22, .7, .2, 1);
 }
 body.look-salon .seam-idle-path {
   stroke: rgba(255, 230, 190, .55);
@@ -388,7 +453,21 @@ body.look-trace .pack-spin.spinning {
 body.look-trace .pack-inner {
   box-shadow: 0 22px 48px rgba(70, 100, 130, .26);
 }
-body.look-trace .pack-lid { height: 11.4%; }
+/* Full-size lid, clipped in pack space so the tear curve matches the pouch */
+body.look-trace .pack-lid {
+  inset: 0;
+  height: auto;
+  transform-origin: 12% var(--lid-tear-y, 9.2%);
+}
+body.look-trace .pack-lid .pd-crimp-top { height: 8%; }
+body.look-trace .lid-open {
+  transform: rotateX(48deg) translateZ(3px);
+  transform-origin: 50% var(--lid-tear-y, 9.2%);
+  background: #4a5564;
+}
+body.look-trace .pouch-lip {
+  display: none;
+}
 body.look-trace .pack-mouth { top: 8.8%; height: 10%; }
 body.look-trace .pack-seam { top: 7.2%; height: 26px; }
 body.look-trace .seam-idle-path {
@@ -435,92 +514,80 @@ body.look-trace .trace-head {
 }
 body.look-trace .pack-spin.tearing .trace-head { opacity: 1; }
 
-body.look-trace .pouch-lip {
-  display: block;
-  position: absolute;
-  left: 4%;
-  right: 4%;
-  top: 9.2%;
-  height: 7px;
-  border-radius: 0;
-  background: linear-gradient(180deg, rgba(20, 24, 32, .55), transparent);
-  box-shadow: none;
-  z-index: 3;
-  opacity: 0;
-  pointer-events: none;
-}
-body.look-trace .pack-spin.opening .pouch-lip,
-body.look-trace .pack-spin.opened .pouch-lip { opacity: 0; visibility: hidden; }
 body.look-trace .pack-mouth { background: none; }
 
-body.look-trace .rip-edge,
-body.look-trace .lid-rip {
+body.look-trace .rip-edge {
   display: block;
   position: absolute;
   left: 0;
   right: 0;
-  height: 12px;
+  top: 9.4%;
+  height: 3px;
+  z-index: 9;
   pointer-events: none;
   opacity: 0;
-  background: linear-gradient(90deg, #7ef0ff, #ffe29a 28%, #fff 50%, #ff6ad5 78%, #7ef0ff);
-  box-shadow: 0 0 12px rgba(126, 240, 255, .95), 0 0 20px rgba(255, 106, 213, .55), 0 0 8px #ffe29a;
+  background: linear-gradient(90deg, rgba(255,255,255,.15), rgba(255,255,255,.55) 40%, rgba(255,255,255,.2));
 }
-body.look-trace .lid-rip { bottom: 0; }
-body.look-trace .rip-edge { top: 0; z-index: 9; }
+body.look-trace .lid-rip { display: none; }
 body.look-trace .pack-spin.opening .rip-edge,
-body.look-trace .pack-spin.opening .lid-rip { opacity: .95; }
-body.look-trace .pack-spin.opened .rip-edge,
-body.look-trace .pack-spin.opened .lid-rip { opacity: 0; visibility: hidden; }
+body.look-trace .pack-spin.opened .rip-edge { opacity: 0; visibility: hidden; }
+
+body.look-trace .lid-open {
+  display: none;
+}
+body.look-trace .pack-spin.opening .pack-lid.flyoff .lid-open,
+body.look-trace .pack-spin.opened .pack-lid.flyoff .lid-open {
+  display: block;
+}
 
 body.look-trace .tear-flash {
   display: block;
   position: absolute;
-  left: -4%;
-  right: -4%;
-  top: 7.2%;
-  height: 22px;
+  left: 4%;
+  right: 4%;
+  top: 8.2%;
+  height: 8px;
   z-index: 14;
   pointer-events: none;
-  border-radius: 10px;
-  background: linear-gradient(90deg, transparent, #7ef0ff 16%, #fff 40%, #ff6ad5 58%, #fff 78%, transparent);
-  box-shadow:
-    0 0 22px #fff,
-    0 0 36px rgba(126, 240, 255, .85),
-    0 0 28px rgba(255, 106, 213, .55),
-    0 -8px 18px rgba(126, 240, 255, .28),
-    0 8px 18px rgba(255, 106, 213, .22);
+  border-radius: 6px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.85) 45%, rgba(255,255,255,.85) 55%, transparent);
+  box-shadow: 0 0 10px rgba(255, 255, 255, .45);
   opacity: 0;
 }
-body.look-trace .tear-flash.on { animation: tearSnap .28s ease-out forwards; }
+body.look-trace .tear-flash.on { animation: tearSnap .2s ease-out forwards; }
 @keyframes tearSnap {
-  0% { opacity: 0; transform: scaleX(.18); }
-  22% { opacity: 1; transform: scaleX(1); }
-  100% { opacity: 0; transform: scaleX(1.08); }
+  0% { opacity: 0; transform: scaleX(.3); }
+  30% { opacity: .7; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1.02); }
 }
 
 /* Flush → left peel → toss up-right, like the Pocket recording */
-body.look-trace .pack-lid { transform-origin: 12% 100%; }
 body.look-trace .pack-lid.flyoff {
   animation: pocketLid .7s cubic-bezier(.18, .72, .22, 1) forwards;
-  transition: opacity .36s .34s ease;
+  transition: none;
   pointer-events: none;
 }
 @keyframes pocketLid {
-  0% { transform: none; }
-  16% { transform: rotateX(-30deg) rotateZ(-3deg) translate3d(0, -8%, 10px); }
-  100% { transform: translate3d(18%, -170%, 34px) rotateZ(18deg) rotateX(-20deg); }
+  0% { transform: none; opacity: 1; }
+  18% { transform: rotateX(-58deg) rotateZ(-2deg) translate3d(0, -1%, 18px); opacity: 1; }
+  60% { opacity: 1; }
+  100% { transform: translate3d(10%, -20%, 40px) rotateZ(14deg) rotateX(-42deg); opacity: 0; }
 }
 body.look-trace .pack-spin.opening .pack-lid.flyoff { opacity: 1; }
 body.look-trace .pack-spin.opened .pack-lid.flyoff { opacity: 0; }
 
 body.look-trace .pack-spin.opening .pack-inner {
-  animation: packDrop 1.05s .7s cubic-bezier(.28, .55, .2, 1) forwards;
-  transform: none;
+  animation: packDropTrace .9s .42s cubic-bezier(.22, .7, .2, 1) forwards;
 }
 body.look-trace .pack-spin.opened .pack-inner {
-  transition: transform .9s cubic-bezier(.3, .2, .2, 1), opacity .65s ease;
-  transform: translateY(40%) scale(.94);
+  transition: none;
   opacity: 0;
+  transform: translateY(32%) scale(.97);
+}
+@keyframes packDropTrace {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  18% { opacity: 1; }
+  100% { transform: translateY(32%) scale(.97); opacity: 0; }
 }
 body.look-trace .pack-spin.opening .pack-front {
   transform: none;
@@ -528,11 +595,11 @@ body.look-trace .pack-spin.opening .pack-front {
 body.look-trace .pack-well { top: 11%; }
 body.look-trace .pack-cards .tcard {
   --cardw: calc(var(--packw) * .82);
-  transform: translate(-50%, 68%) scale(.88);
+  transform: translate(-50%, 22%) scale(.9);
 }
 body.look-trace .pack-cards .tcard.rise {
-  transform: translate(-50%, -70%) scale(1.05);
-  transition: transform .78s cubic-bezier(.16, .84, .22, 1);
+  transform: translate(-50%, -68%) scale(1.04);
+  transition: transform .9s cubic-bezier(.22, .7, .2, 1);
 }
 
 body.look-trace .packs-left { color: #8a97a6; }

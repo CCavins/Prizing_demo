@@ -298,12 +298,12 @@
 
   function openTiming(id) {
     const look = id || current().id;
-    if (look === 'trace') return { rise: 420, opened: 1360, handoff: 1480 };
-    if (look === 'crimp') return { rise: 420, opened: 1360, handoff: 1600 };
-    if (look === 'salon') return { rise: 520, opened: 1700, handoff: 2100 };
+    if (look === 'trace') return { rise: 380, opened: 1520, handoff: 1680 };
+    if (look === 'crimp') return { rise: 380, opened: 1520, handoff: 1750 };
+    if (look === 'salon') return { rise: 480, opened: 1850, handoff: 2200 };
     if (look === 'vault') return { rise: 360, opened: 560, handoff: 1880 };
     if (look === 'case') return { rise: 400, opened: 600, handoff: 2000 };
-    return { rise: 400, opened: 600, handoff: 1980 };
+    return { rise: 380, opened: 1520, handoff: 1750 };
   }
 
   function playFx(kind) {

@@ -298,13 +298,14 @@
 
   function openTiming(id) {
     const look = id || current().id;
-    /* rise starts with pouch drop (after lid separates); fade begins ~38% in */
-    if (look === 'trace') return { rise: 380, opened: 1550, handoff: 1750 };
-    if (look === 'crimp') return { rise: 380, opened: 1550, handoff: 1800 };
-    if (look === 'salon') return { rise: 480, opened: 1800, handoff: 2100 };
+    /* `rise` must equal the pouch's --draw-delay so card + pouch share one
+       timeline; `opened`/`handoff` land just after --draw-dur completes. */
+    if (look === 'trace') return { rise: 300, opened: 1450, handoff: 1560 };
+    if (look === 'crimp') return { rise: 300, opened: 1450, handoff: 1600 };
+    if (look === 'salon') return { rise: 380, opened: 1780, handoff: 1920 };
     if (look === 'vault') return { rise: 360, opened: 560, handoff: 1880 };
     if (look === 'case') return { rise: 400, opened: 600, handoff: 2000 };
-    return { rise: 380, opened: 1550, handoff: 1800 };
+    return { rise: 300, opened: 1450, handoff: 1600 };
   }
 
   function playFx(kind) {

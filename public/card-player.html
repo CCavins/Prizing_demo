@@ -571,39 +571,52 @@
     position: absolute;
     inset: 0;
   }
+  /*
+    Card geometry: top:50% puts the card's TOP edge at the well's centre, and
+    translateY is in card heights. -56% parks the top edge a hair under the
+    torn lip, fully hidden by the opaque pouch body.
+  */
   .pack-cards .tcard {
     position: absolute;
     left: 50%; top: 50%;
     --cardw: calc(var(--packw) * .7744);
     width: 96%;
-    /* Buried behind the remaining pouch body */
-    transform: translate(-50%, 42%) scale(.9);
+    transform: translate(-50%, -56%) scale(.92);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
-  .pack-cards .tcard.rise {
-    transition: transform 1.05s cubic-bezier(.2,.75,.2,1);
-    /* Rises out the tear; pouch fade reveals the rest */
-    transform: translate(-50%, -48%) scale(1.02);
-  }
 
   /*
-    After the lid separates:
-    1) pouch slides down, card slides up out of the tear
-    2) once ~15–20% of the card is clear of the mouth, pouch fades out
+    Draw-out choreography (after the lid separates):
+      card rises + pouch drops on identical keyframes, so how much card is
+      exposed above the lip is deterministic:
+        0%  → card top just under the lip (hidden)
+        40% → ~17% of the card is out of the mouth  → pouch starts fading
+        75% → ~38% out                                → pouch fully transparent
+       100% → card parked; handoff to the reveal stack
   */
+  .pack-cards .tcard.rise {
+    transition: none;
+    animation: cardDraw var(--draw-dur, 1.1s) both;
+  }
+  @keyframes cardDraw {
+    0%   { transform: translate(-50%, -56%)   scale(.92);  animation-timing-function: cubic-bezier(.4, 0, .7, 1); }
+    40%  { transform: translate(-50%, -65.6%) scale(.96);  animation-timing-function: linear; }
+    75%  { transform: translate(-50%, -74%)   scale(.995); animation-timing-function: cubic-bezier(0, 0, .2, 1); }
+    100% { transform: translate(-50%, -80%)   scale(1.02); }
+  }
   .pack-spin.opening .pack-inner {
-    animation: packDrawDown 1.05s .38s cubic-bezier(.22,.7,.2,1) forwards;
+    animation: pouchDraw var(--draw-dur, 1.1s) var(--draw-delay, .3s) both;
+  }
+  @keyframes pouchDraw {
+    0%   { transform: translateY(0)     scale(1);   opacity: 1; animation-timing-function: cubic-bezier(.4, 0, .7, 1); }
+    40%  { transform: translateY(8.8%)  scale(.99); opacity: 1; animation-timing-function: linear; }
+    75%  { transform: translateY(16.5%) scale(.98); opacity: 0; animation-timing-function: cubic-bezier(0, 0, .2, 1); }
+    100% { transform: translateY(22%)   scale(.97); opacity: 0; }
   }
   .pack-spin.opened .pack-inner {
-    transition: opacity .3s ease;
     opacity: 0;
-    transform: translateY(32%) scale(.97);
-  }
-  @keyframes packDrawDown {
-    0%   { transform: translateY(0) scale(1); opacity: 1; }
-    38%  { transform: translateY(16%) scale(.99); opacity: 1; }
-    100% { transform: translateY(32%) scale(.97); opacity: 0; }
+    transform: translateY(22%) scale(.97);
   }
   .pack-spin.opening .pack-front,
   .pack-spin.opened .pack-front {
@@ -1524,6 +1537,7 @@
 
     const timing = L.openTiming();
     const contentsPromise = buildPackContents(session.opened);
+    const openedAt = performance.now();
     setTearVisual(1);
     packTop.style.transform = '';
     packTop.style.transformOrigin = '';
@@ -1548,18 +1562,20 @@
     packCardsEl.innerHTML = '';
     const peek = D.renderCard(currentPackCards[0]);
     packCardsEl.appendChild(peek);
-    const kickRise = () => peek.classList.add('rise');
-    if (timing.rise <= 0) {
-      requestAnimationFrame(() => requestAnimationFrame(kickRise));
-    } else {
-      setTimeout(() => requestAnimationFrame(kickRise), timing.rise);
-    }
-
-    setTimeout(() => packSpin.classList.add('opened'), timing.opened);
-    setTimeout(() => {
+    // Schedule relative to when the pack started opening, so the card's rise
+    // stays in lockstep with the pouch's CSS delay even if contents were slow.
+    const sinceOpen = performance.now() - openedAt;
+    const at = (ms, fn) => {
+      const wait = ms - sinceOpen;
+      if (wait <= 0) requestAnimationFrame(() => requestAnimationFrame(fn));
+      else setTimeout(() => requestAnimationFrame(fn), wait);
+    };
+    at(timing.rise, () => peek.classList.add('rise'));
+    at(timing.opened, () => packSpin.classList.add('opened'));
+    at(timing.handoff, () => {
       const rect = peek.getBoundingClientRect();
       showReveal(currentPackCards, rect);
-    }, timing.handoff);
+    });
   }
 
   function resetPack() {
